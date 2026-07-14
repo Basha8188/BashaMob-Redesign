@@ -97,7 +97,7 @@ php artisan optimize
 ## مسار المشروع محليًا
 
 ```text
-C:\xampp\htdocs\myproject\BashaStore\BashaMob
+C:\xampp\htdocs\myproject\BashaMob
 ```
 
-مستودع Git الحالي جذره مجلد `BashaStore` الأب، لذلك راجع حالة Git من جذر المستودع قبل تنفيذ `git add` أو `git commit`.
+مشروع `BashaMob` مستودع Git مستقل، وجذر المستودع هو مجلد المشروع نفسه.
