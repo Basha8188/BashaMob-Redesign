@@ -1,0 +1,93 @@
+body{
+
+    font-family: "Cairo", sans-serif;
+
+    background:#EEF3FF;
+
+    min-height:100vh;
+
+    overflow-x:hidden;
+
+    position:relative;
+
+}
+
+/* الخلفية */
+
+.background{
+
+    position:fixed;
+
+    inset:0;
+
+    overflow:hidden;
+
+    z-index:-100;
+
+}
+
+/* أول Blob */
+
+.blob{
+
+    position:absolute;
+
+    border-radius:50%;
+
+    filter:blur(90px);
+
+    opacity:.65;
+
+    animation:float 18s ease-in-out infinite;
+
+}
+
+.blob1{
+
+    width:520px;
+
+    height:520px;
+
+    top:-120px;
+
+    right:-120px;
+
+    background:#6C63FF;
+
+}
+
+/* الثاني */
+
+.blob2{
+
+    width:430px;
+
+    height:430px;
+
+    left:-120px;
+
+    bottom:-120px;
+
+    background:#48A8FF;
+
+    animation-delay:4s;
+
+}
+
+/* الثالث */
+
+.blob3{
+
+    width:350px;
+
+    height:350px;
+
+    top:45%;
+
+    left:40%;
+
+    background:#8E7CFF;
+
+    animation-delay:7s;
+
+}
