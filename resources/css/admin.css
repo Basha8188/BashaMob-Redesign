@@ -473,3 +473,12 @@ html[data-admin-ui="cosmic"][data-palette="emerald"] .btn-primary{background:lin
     html[lang="en"][data-admin-ui="cosmic"] .admin-topbar>.topbar-actions{grid-column:3!important;justify-self:end!important;direction:ltr!important}
 }
 @media(min-width:761px) and (max-width:1100px){html[data-admin-ui="cosmic"] .admin-topbar{grid-template-columns:minmax(145px,1fr) 245px minmax(145px,1fr)!important}.topbar-actions .topbar-clock,.topbar-actions .admin-user{display:none!important}}
+
+/* Anchor the global search to the exact physical centre of the top bar. */
+@media(min-width:761px){
+    html[data-admin-ui="cosmic"] .admin-topbar{position:sticky!important}
+    html[data-admin-ui="cosmic"] .admin-topbar>.topbar-search{
+        position:absolute!important;left:50%!important;right:auto!important;top:50%!important;
+        width:min(330px,32vw)!important;transform:translate(-50%,-50%)!important;margin:0!important;
+    }
+}

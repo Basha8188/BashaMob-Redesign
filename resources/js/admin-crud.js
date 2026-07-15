@@ -9,11 +9,11 @@ const schemas = {
     },
     sales: {
         ar: 'فاتورة بيع', en: 'Sales invoice', description: option('أنشئ فاتورة بيع واربطها بالعميل وحالة السداد.', 'Create a sales invoice and set its customer and payment status.'),
-        fields: [field('number','رقم الفاتورة','Invoice number'), field('customer','اسم العميل','Customer name'), field('date','تاريخ البيع','Sale date','date'), field('total','إجمالي الفاتورة','Invoice total','text',{ inputmode:'decimal' }), field('status','حالة السداد','Payment status','select',{ options:[option('مكتملة','Paid'),option('جزئي','Partially paid'),option('معلقة','Pending')] })]
+        fields: [field('number','رقم الفاتورة (اتركه فارغًا للتوليد)','Invoice number','text',{ required:false }), field('customer','اسم العميل','Customer name'), field('date','تاريخ البيع','Sale date','date'), field('total','إجمالي الفاتورة','Invoice total','text',{ inputmode:'decimal' }), field('status','حالة السداد','Payment status','select',{ options:[option('مكتملة','Paid'),option('معلقة','Pending')] }), field('customer_phone','هاتف العميل','Customer phone','tel',{table:false}), field('product_sku','كود المنتج SKU','Product SKU','text',{table:false}), field('quantity','الكمية','Quantity','number',{table:false,min:'0.001'}), field('unit_price','سعر الوحدة','Unit price','text',{table:false,inputmode:'decimal'}), field('paid_amount','المبلغ المدفوع','Paid amount','text',{table:false,inputmode:'decimal',required:false})]
     },
     purchases: {
         ar: 'فاتورة شراء', en: 'Purchase invoice', description: option('سجّل فاتورة المورد وحالة استلام البضاعة.', 'Record the supplier invoice and receiving status.'),
-        fields: [field('number','رقم الفاتورة','Invoice number'), field('supplier','اسم المورد','Supplier name'), field('date','تاريخ الشراء','Purchase date','date'), field('total','إجمالي الفاتورة','Invoice total','text',{ inputmode:'decimal' }), field('status','حالة الاستلام','Receiving status','select',{ options:[option('مستلمة','Received'),option('جزئي','Partially received'),option('قيد الانتظار','Pending')] })]
+        fields: [field('number','رقم الفاتورة (اتركه فارغًا للتوليد)','Invoice number','text',{required:false}), field('supplier','اسم المورد','Supplier name'), field('date','تاريخ الشراء','Purchase date','date'), field('total','إجمالي الفاتورة','Invoice total','text',{ inputmode:'decimal' }), field('status','حالة الاستلام','Receiving status','select',{ options:[option('مستلمة','Received'),option('قيد الانتظار','Pending')] }), field('supplier_phone','هاتف المورد','Supplier phone','tel',{table:false,required:false}), field('product_sku','كود المنتج SKU','Product SKU','text',{table:false}), field('quantity','الكمية','Quantity','number',{table:false,min:'0.001'}), field('unit_cost','تكلفة الوحدة','Unit cost','text',{table:false,inputmode:'decimal'}), field('paid_amount','المدفوع','Paid amount','text',{table:false,inputmode:'decimal',required:false})]
     },
     inventory: {
         ar: 'حركة مخزون', en: 'Inventory movement', description: option('حدّد المخزن والمنتج والرصيد وحد إعادة الطلب.', 'Set the warehouse, product, stock and reorder level.'),
@@ -21,7 +21,7 @@ const schemas = {
     },
     repairs: {
         ar: 'تذكرة صيانة', en: 'Repair ticket', description: option('سجّل بيانات العميل والجهاز والعطل وحالة الصيانة.', 'Record the customer, device, fault and repair status.'),
-        fields: [field('number','رقم التذكرة','Ticket number'), field('customer','اسم العميل','Customer name'), field('device','نوع الجهاز','Device'), field('fault','وصف العطل','Fault description'), field('status','حالة الصيانة','Repair status','select',{ options:[option('قيد الإصلاح','In repair'),option('بانتظار قطعة','Waiting for part'),option('جاهز للاستلام','Ready for pickup'),option('تم التسليم','Delivered')] })]
+        fields: [field('number','رقم التذكرة','Ticket number','text',{required:false}), field('customer','اسم العميل','Customer name'), field('device','نوع الجهاز','Device'), field('fault','وصف العطل','Fault description'), field('status','حالة الصيانة','Repair status','select',{ options:[option('قيد الإصلاح','In repair'),option('بانتظار قطعة','Waiting for part'),option('جاهز للاستلام','Ready for pickup'),option('تم التسليم','Delivered')] }), field('customer_phone','رقم هاتف العميل','Customer phone','tel',{table:false})]
     },
     customers: {
         ar: 'عميل', en: 'Customer', description: option('أضف بيانات التواصل الأساسية للعميل.', 'Add the customer contact information.'),
@@ -61,7 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let module = document.querySelector('[data-crud-add]')?.dataset.module || document.querySelector('.admin-table')?.dataset.module;
     let editingRow = null;
-    const serverModules = new Set(['products', 'customers', 'suppliers', 'team']);
+    const serverModules = new Set(['products', 'customers', 'suppliers', 'team', 'sales', 'purchases', 'inventory', 'repairs', 'expenses', 'settings']);
     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
 
     const dataCells = row => [...row.children].filter(cell => !cell.querySelector('.row-actions'));
@@ -77,7 +77,10 @@ document.addEventListener('DOMContentLoaded', () => {
             row.append(cell);
         });
         const actions = document.createElement('td');
-        actions.innerHTML = `<div class="row-actions">${module === 'sales' ? '<button type="button" data-row-print title="طباعة الفاتورة">▣</button>' : ''}<button type="button" data-row-edit title="تعديل">✎</button><button type="button" data-row-delete title="حذف">×</button></div>`;
+        const canEdit = !['sales', 'purchases', 'inventory', 'reports'].includes(module);
+        const canDelete = !['inventory', 'reports', 'repairs'].includes(module);
+        const deleteTitle = ['sales', 'purchases'].includes(module) ? 'إلغاء' : 'حذف';
+        actions.innerHTML = `<div class="row-actions">${module === 'sales' ? '<button type="button" data-row-print title="طباعة الفاتورة">▣</button>' : ''}${canEdit ? '<button type="button" data-row-edit title="تعديل">✎</button>' : ''}${canDelete ? `<button type="button" data-row-delete title="${deleteTitle}">×</button>` : ''}</div>`;
         row.append(actions);
         return row;
     };
@@ -151,7 +154,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const renderFields = (schema, row) => {
         fieldsRoot.replaceChildren();
         const values = row ? dataCells(row).map(cell => cell.textContent.trim()) : [];
-        schema.fields.forEach((descriptor, index) => fieldsRoot.append(makeField(descriptor, values[index] || '')));
+        let tableIndex = 0;
+        schema.fields.forEach(descriptor => {
+            const value = descriptor.table === false ? '' : (values[tableIndex++] || '');
+            fieldsRoot.append(makeField(descriptor, value));
+        });
         const allPermissions = form.querySelector('.permission-grid input');
         allPermissions?.addEventListener('change', () => {
             if (allPermissions.checked) form.querySelectorAll('.permission-grid input').forEach(input => { input.checked = true; });
@@ -231,6 +238,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     editingRow.dataset.recordId = String(saved.id);
                     dataCells(editingRow).forEach((cell, index) => cell.replaceChildren(document.createTextNode(saved.cells[index] ?? '')));
                 } else if (tableBody()) tableBody().prepend(buildRow(saved.cells, saved.id));
+                else window.setTimeout(() => window.location.reload(), 500);
                 close(); notify(payload.message);
             } catch (error) { notify(error.message); }
             finally { button.disabled = false; }

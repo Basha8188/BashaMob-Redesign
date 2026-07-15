@@ -99,9 +99,36 @@ document.addEventListener('DOMContentLoaded', () => {
         window.setTimeout(() => firstField?.focus(), 350);
     });
 
-    document.querySelector('[data-demo-form]')?.addEventListener('submit', event => {
+    document.querySelector('[data-demo-form]')?.addEventListener('submit', async event => {
         event.preventDefault();
-        showToast('تم حفظ بيانات المحل في نسخة العرض');
+        const form = event.currentTarget;
+        const button = form.querySelector('button[type="submit"]');
+        button.disabled = true;
+        try {
+            const response = await fetch(form.action, { method: 'POST', headers: { Accept: 'application/json', 'X-CSRF-TOKEN': form.elements._token.value }, body: new FormData(form) });
+            const payload = await response.json();
+            if (!response.ok) throw new Error(payload.message || Object.values(payload.errors || {})[0]?.[0] || 'تعذر حفظ البيانات.');
+            showToast(payload.message);
+        } catch (error) {
+            showToast(error.message);
+        } finally {
+            button.disabled = false;
+        }
+    });
+
+    document.querySelector('[data-report-summary]')?.addEventListener('click', async event => {
+        const button = event.currentTarget;
+        button.disabled = true;
+        try {
+            const response = await fetch('/admin/reports/summary', { headers: { Accept: 'application/json' } });
+            const payload = await response.json();
+            if (!response.ok) throw new Error(payload.message || 'تعذر إنشاء التقرير.');
+            showToast(`التقرير جاهز — المبيعات: ${payload.sales ?? 0}، المشتريات: ${payload.purchases ?? 0}، قيمة المخزون: ${payload.stock_value ?? 0}`);
+        } catch (error) {
+            showToast(error.message);
+        } finally {
+            button.disabled = false;
+        }
     });
 
     const sidebar = document.querySelector('.admin-sidebar');

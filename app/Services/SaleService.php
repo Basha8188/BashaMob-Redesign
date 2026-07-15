@@ -4,6 +4,8 @@ namespace App\Services;
 
 use App\Enums\ProductSerialStatus;
 use App\Enums\StockMovementType;
+use App\Models\CashRegister;
+use App\Models\CashTransaction;
 use App\Models\ProductSerial;
 use App\Models\Sale;
 use App\Models\SaleReturn;
@@ -41,6 +43,9 @@ class SaleService
 
             foreach ($payments as $payment) {
                 $sale->payments()->create(['amount' => $payment['amount'], 'method' => $payment['method'], 'reference' => $payment['reference'] ?? null, 'paid_at' => $payment['paid_at'] ?? now(), 'received_by' => auth()->id()]);
+                if ($payment['method'] === 'cash' && $register = CashRegister::where('is_active', true)->first()) {
+                    CashTransaction::create(['cash_register_id' => $register->id, 'type' => 'sale_payment', 'amount' => $payment['amount'], 'reference_type' => $sale->getMorphClass(), 'reference_id' => $sale->id, 'payment_method' => 'cash', 'description' => 'تحصيل فاتورة '.$sale->invoice_number, 'created_by' => auth()->id()]);
+                }
             }
             $paid = (float) $sale->payments()->sum('amount');
             $total = (float) $sale->total;
@@ -94,9 +99,29 @@ class SaleService
                 $this->inventory->adjust($sale->warehouse, $item->product, $quantity, StockMovementType::SaleReturn, $return, null, $item->serial, (float) $item->unit_price);
             }
             $return->update(['total' => $total]);
-            ActivityLogger::record('sale.refunded',$return);
+            ActivityLogger::record('sale.refunded', $return);
 
             return $return->fresh('items');
+        });
+    }
+
+    public function pay(Sale $sale, float $amount, string $method = 'cash', ?string $reference = null): Sale
+    {
+        return DB::transaction(function () use ($sale, $amount, $method, $reference) {
+            $sale = Sale::lockForUpdate()->findOrFail($sale->id);
+            if ($sale->status !== 'finalized' || $amount <= 0 || $amount > (float) $sale->due_amount) {
+                throw ValidationException::withMessages(['amount' => 'قيمة الدفعة غير صحيحة أو تتجاوز المتبقي.']);
+            }
+            $sale->payments()->create(['amount' => $amount, 'method' => $method, 'reference' => $reference, 'paid_at' => now(), 'received_by' => auth()->id()]);
+            $paid = (float) $sale->payments()->sum('amount');
+            $due = max(0, (float) $sale->total - $paid);
+            $sale->update(['paid_amount' => $paid, 'due_amount' => $due, 'payment_status' => $due <= 0 ? 'paid' : 'partial']);
+            if ($method === 'cash' && $register = CashRegister::where('is_active', true)->first()) {
+                CashTransaction::create(['cash_register_id' => $register->id, 'type' => 'sale_payment', 'amount' => $amount, 'reference_type' => $sale->getMorphClass(), 'reference_id' => $sale->id, 'payment_method' => $method, 'description' => 'تحصيل فاتورة '.$sale->invoice_number, 'created_by' => auth()->id()]);
+            }
+            ActivityLogger::record('sale.payment_received', $sale, newValues: ['amount' => $amount, 'due_amount' => $due]);
+
+            return $sale->fresh('payments');
         });
     }
 }
