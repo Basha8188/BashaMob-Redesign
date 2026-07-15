@@ -16,7 +16,7 @@
     <div class="hero-visual reveal">
         <div class="device-card">
             <span class="floating-tag top">جديد <b>2026</b></span>
-            <div class="phone"><div class="phone-screen"><span class="dynamic-island"></span><b>B</b><small>BashaMob</small></div></div>
+            <div class="phone"><div class="phone-screen"><span class="dynamic-island"></span><x-brand-symbol class="hero-phone-logo"/><small>BashaMob</small></div></div>
             <span class="floating-tag bottom">ابتداءً من <b>18,999 ج.م</b></span>
         </div>
     </div>

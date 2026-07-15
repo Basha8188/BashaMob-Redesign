@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\StaffSessionController;
+use App\Http\Controllers\Auth\StaffRecoveryController;
 use Illuminate\Support\Facades\Route;
 
 Route::view('/', 'pages.home')->name('home');
@@ -10,6 +11,8 @@ Route::view('/computers', 'pages.computers')->name('computers');
 Route::middleware('guest')->group(function () {
     Route::get('/staff/login', [StaffSessionController::class, 'create'])->name('staff.login');
     Route::post('/staff/login', [StaffSessionController::class, 'store'])->name('staff.login.store');
+    Route::post('/staff/recovery/send', [StaffRecoveryController::class, 'send'])->middleware('throttle:5,1')->name('staff.recovery.send');
+    Route::post('/staff/recovery/verify', [StaffRecoveryController::class, 'verify'])->middleware('throttle:8,1')->name('staff.recovery.verify');
 });
 Route::post('/staff/logout', [StaffSessionController::class, 'destroy'])->middleware('auth')->name('staff.logout');
 Route::view('/customer/device-request', 'pages.customer-device-request')->name('customer.device-request');

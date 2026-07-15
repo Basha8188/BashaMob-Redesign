@@ -1,0 +1,2 @@
+@props(['tone','icon','title','subtitle','value','unit'=>null,'trend'=>null,'trendLabel'=>null,'trendType'=>''])
+<article class="glass-panel stat-{{ $tone }}"><div class="stat-label"><span class="stat-icon"><x-admin-icon :name="$icon" /></span><span>{{ $title }}<small>{{ $subtitle }}</small></span></div><strong>{{ $value }} @if($unit)<em>{{ $unit }}</em>@endif</strong>@if($trend || $trendLabel)<div class="stat-trend {{ $trendType }}">{{ $trend }} @if($trendLabel)<small>{{ $trendLabel }}</small>@endif</div>@endif</article>

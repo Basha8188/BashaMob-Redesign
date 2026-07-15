@@ -1,0 +1,3 @@
+@media(max-width:1050px){.topbar-clock{display:none}.admin-topbar{grid-template-columns:auto minmax(180px,1fr) auto!important}}
+@media(max-width:760px){.sidebar-search{display:flex!important}.dashboard-grid{gap:7px}.sales-chart-panel,.activity-panel{min-height:auto}.admin-topbar{padding-inline:9px!important}.admin-content main{overflow:hidden}}
+@media(max-width:520px){.topbar-actions .notification-button{display:grid!important}.dashboard-welcome>div:first-child{min-width:0}.dashboard-welcome h1{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.stat-label>span:last-child{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100px}}

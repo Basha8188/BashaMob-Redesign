@@ -1,0 +1,5 @@
+.topbar-clock{display:flex;flex-direction:column;align-items:center;padding-inline:9px;border-inline:1px solid rgba(83,137,211,.13);line-height:1.2;direction:ltr}
+.topbar-clock b{font-size:9px;color:#e5efff}
+.topbar-clock small{font-size:6px;color:#647ba4}
+.admin-topbar button{cursor:pointer}
+.admin-topbar button:hover{border-color:rgba(77,166,232,.35)!important;color:#55d5e7!important;background:rgba(20,61,112,.6)!important}

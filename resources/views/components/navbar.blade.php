@@ -2,7 +2,7 @@
 
 <header class="nav-wrap">
     <a class="brand" href="{{ route('home') }}" aria-label="العودة للرئيسية">
-        <span class="brand-mark">B</span><span>Basha<b>Mob</b></span>
+        <x-brand-symbol class="brand-mark"/><span>Basha<b>Mob</b></span>
     </a>
 
     <a class="admin-entry" href="{{ route('customer.device-request') }}">

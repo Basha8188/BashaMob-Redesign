@@ -1,0 +1,5 @@
+.sales-chart-panel,.activity-panel{min-height:214px}
+.sales-chart:after{content:"";position:absolute;inset:18px 7% 28px;background:linear-gradient(160deg,transparent 40%,rgba(63,125,241,.055));clip-path:polygon(0 70%,17% 53%,34% 62%,50% 37%,66% 45%,83% 10%,100% 28%,100% 100%,0 100%);pointer-events:none}
+.sales-chart{position:relative}
+.activity-panel .panel-head{padding-bottom:7px;border-bottom:1px solid rgba(83,132,199,.08)}
+.section-title{display:flex;align-items:end;justify-content:space-between}

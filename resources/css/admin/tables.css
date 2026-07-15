@@ -1,0 +1,6 @@
+.admin-table{border-spacing:0}
+.admin-table tbody tr{transition:background .18s ease}
+.admin-table tbody tr:hover{background:rgba(33,79,143,.08)}
+.admin-table th{font-weight:700;background:rgba(5,19,47,.32)}
+.admin-table td,.admin-table th{padding-block:12px}
+.admin-table-wrap{border:1px solid rgba(83,132,199,.09);border-radius:9px}

@@ -35,4 +35,11 @@ return [
         ],
     ],
 
+    'whatsapp' => [
+        'url' => env('WHATSAPP_API_URL'),
+        'token' => env('WHATSAPP_ACCESS_TOKEN'),
+        'template' => env('WHATSAPP_RECOVERY_TEMPLATE', 'password_reset_code'),
+        'language' => env('WHATSAPP_TEMPLATE_LANGUAGE', 'ar'),
+    ],
+
 ];

@@ -1,0 +1,4 @@
+.admin-body button,.admin-body a{-webkit-tap-highlight-color:transparent}
+.row-actions{display:flex;align-items:center;gap:5px}
+.row-actions button{width:26px;height:26px;border-radius:7px!important;background:rgba(30,73,132,.18)!important;border:1px solid rgba(83,139,210,.12)!important}
+.row-actions button:hover{color:#55cfe2!important;border-color:rgba(70,190,220,.25)!important}

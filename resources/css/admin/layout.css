@@ -1,0 +1,6 @@
+.admin-body{--reference-bg:#050b1e;--reference-panel:rgba(7,22,55,.76);--reference-panel-strong:rgba(8,25,61,.9);--reference-border:rgba(84,143,225,.17);--reference-muted:#7184aa;--reference-text:#edf5ff;--reference-radius:10px;--reference-blur:22px}
+.admin-shell{isolation:isolate}
+.admin-content{position:relative;z-index:1}
+.admin-content main{width:100%}
+.admin-icon{display:inline-grid;place-items:center;flex:none}
+.admin-icon svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.55;stroke-linecap:round;stroke-linejoin:round}

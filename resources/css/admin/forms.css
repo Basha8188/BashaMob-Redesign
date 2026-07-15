@@ -1,0 +1,4 @@
+.admin-body input,.admin-body select,.admin-body textarea{caret-color:#4dcde1}
+.admin-body input:focus,.admin-body select:focus,.admin-body textarea:focus{outline:0;border-color:rgba(67,170,225,.4)!important;box-shadow:0 0 0 3px rgba(40,135,210,.08)!important}
+.admin-form label{color:#7f91b2!important}
+.crud-dialog{background:rgba(7,22,55,.96)!important;border-color:rgba(83,143,224,.2)!important;color:#edf5ff!important}

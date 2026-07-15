@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
     {
         User::updateOrCreate(['email' => 'admin@bashamob.local'], [
             'name' => 'BashaMob Owner',
+            'phone' => env('STAFF_PHONE', '201012345678'),
             'password' => Hash::make('password'),
         ]);
     }

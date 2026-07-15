@@ -1,4 +1,7 @@
 import './bootstrap';
+import './admin-i18n';
+import './admin-search';
+import './admin-crud';
 
 document.addEventListener('DOMContentLoaded', () => {
     if (!document.querySelector('.ambient-leaves')) {
@@ -54,7 +57,12 @@ document.addEventListener('DOMContentLoaded', () => {
             const input = document.getElementById(button.dataset.target);
             if (!input) return;
             input.type = input.type === 'password' ? 'text' : 'password';
-            button.textContent = input.type === 'password' ? '◉' : '⊘';
+            if (button.classList.contains('reference-eye')) {
+                button.classList.toggle('is-visible', input.type === 'text');
+                button.setAttribute('aria-label', input.type === 'password' ? 'Show password' : 'Hide password');
+            } else {
+                button.textContent = input.type === 'password' ? '◉' : '⊘';
+            }
         });
     });
 
@@ -65,15 +73,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (file && title) title.textContent = file.name;
     });
 
-    const modal = document.getElementById('crud-modal');
-    const crudForm = document.getElementById('crud-form');
-    const tableBody = document.querySelector('.admin-table tbody');
     const toast = document.getElementById('admin-toast');
     const receiptAction = document.getElementById('receipt-action');
     const receiptDate = document.getElementById('receipt-date');
     const receiptNumber = document.getElementById('receipt-number');
     const receiptAmount = document.getElementById('receipt-amount');
-    let editingRow = null;
 
     const showToast = (message = 'تم حفظ البيانات بنجاح') => {
         if (!toast) return;
@@ -87,63 +91,12 @@ document.addEventListener('DOMContentLoaded', () => {
         window.setTimeout(() => toast.classList.remove('show'), 7000);
     };
 
-    const openCrud = (row = null) => {
-        if (!modal || !crudForm) return;
-        editingRow = row;
-        crudForm.reset();
-        document.getElementById('crud-title').textContent = row ? 'تعديل البيانات' : 'إضافة سجل جديد';
-        if (row) {
-            const cells = row.querySelectorAll('td');
-            crudForm.elements.primary.value = cells[1]?.textContent.trim() || '';
-            crudForm.elements.details.value = cells[2]?.textContent.trim() || '';
-            crudForm.elements.value.value = cells[3]?.textContent.trim() || '';
-            crudForm.elements.status.value = [...crudForm.elements.status.options].some(option => option.value === cells[4]?.textContent.trim()) ? cells[4].textContent.trim() : 'نشط';
-        }
-        modal.classList.add('is-open');
-        modal.setAttribute('aria-hidden', 'false');
-    };
+    document.addEventListener('admin:toast', event => showToast(event.detail));
 
-    const closeCrud = () => {
-        modal?.classList.remove('is-open');
-        modal?.setAttribute('aria-hidden', 'true');
-    };
-
-    document.querySelector('[data-crud-add]')?.addEventListener('click', () => openCrud());
-    document.querySelectorAll('[data-close-modal]').forEach(button => button.addEventListener('click', closeCrud));
-    document.addEventListener('keydown', event => { if (event.key === 'Escape') closeCrud(); });
-
-    document.addEventListener('click', event => {
-        const editButton = event.target.closest('[data-row-edit]');
-        const deleteButton = event.target.closest('[data-row-delete]');
-        if (editButton) openCrud(editButton.closest('tr'));
-        if (deleteButton && window.confirm('هل تريد حذف هذا السجل التجريبي؟')) {
-            deleteButton.closest('tr')?.remove();
-            showToast('تم حذف السجل');
-        }
-    });
-
-    crudForm?.addEventListener('submit', event => {
-        event.preventDefault();
-        const values = new FormData(crudForm);
-        if (editingRow) {
-            const cells = editingRow.querySelectorAll('td');
-            cells[1].textContent = values.get('primary');
-            cells[2].textContent = values.get('details');
-            cells[3].textContent = values.get('value');
-            cells[4].textContent = values.get('status');
-        } else if (tableBody) {
-            const row = document.createElement('tr');
-            row.dataset.demoRow = '';
-            row.innerHTML = `<td>NEW-${String(Date.now()).slice(-5)}</td><td></td><td></td><td></td><td class="status-cell"></td><td><div class="row-actions"><button type="button" data-row-edit title="تعديل">✎</button><button type="button" data-row-delete title="حذف">×</button></div></td>`;
-            const cells = row.querySelectorAll('td');
-            cells[1].textContent = values.get('primary');
-            cells[2].textContent = values.get('details');
-            cells[3].textContent = values.get('value');
-            cells[4].textContent = values.get('status');
-            tableBody.prepend(row);
-        }
-        closeCrud();
-        showToast();
+    document.querySelector('[data-store-focus]')?.addEventListener('click', () => {
+        const firstField = document.querySelector('[data-demo-form] input');
+        document.querySelector('[data-demo-form]')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        window.setTimeout(() => firstField?.focus(), 350);
     });
 
     document.querySelector('[data-demo-form]')?.addEventListener('submit', event => {
@@ -162,7 +115,26 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    document.querySelector('.notification-button')?.addEventListener('click', () => showToast('لا توجد إشعارات جديدة'));
+    const notificationButton = document.querySelector('.notification-button');
+    const notificationPopover = document.getElementById('admin-notifications');
+    notificationButton?.addEventListener('click', event => {
+        event.stopPropagation();
+        const open = notificationPopover?.classList.toggle('is-open') ?? false;
+        notificationPopover?.setAttribute('aria-hidden', String(!open));
+        notificationButton.classList.toggle('is-open', open);
+    });
+    notificationPopover?.addEventListener('click', event => event.stopPropagation());
+    document.querySelector('[data-mark-notifications]')?.addEventListener('click', () => {
+        notificationPopover?.classList.add('all-read');
+        notificationButton?.classList.add('all-read');
+        const count = notificationButton?.querySelector('.notification-count');
+        if (count) count.textContent = '0';
+    });
+    document.addEventListener('click', () => {
+        notificationPopover?.classList.remove('is-open');
+        notificationPopover?.setAttribute('aria-hidden', 'true');
+        notificationButton?.classList.remove('is-open');
+    });
     document.getElementById('print-receipt')?.addEventListener('click', () => window.print());
 
     const printInvoice = (row = null) => {
@@ -193,4 +165,108 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('skip-welcome')?.addEventListener('click', dismissWelcome);
         window.setTimeout(dismissWelcome, 2800);
     }
+
+    const requestCountKey = 'basha-customer-request-count';
+    const readRequestCount = () => Number.parseInt(localStorage.getItem(requestCountKey) || '3', 10) || 0;
+    const updateRequestBadges = () => document.querySelectorAll('[data-customer-request-badge]').forEach(badge => {
+        badge.textContent = String(readRequestCount());
+        badge.hidden = readRequestCount() < 1;
+    });
+    updateRequestBadges();
+    window.addEventListener('storage', event => { if (event.key === requestCountKey) updateRequestBadges(); });
+
+    document.querySelector('.customer-device-form')?.addEventListener('submit', event => {
+        event.preventDefault();
+        const form = event.currentTarget;
+        if (!form.reportValidity()) return;
+        const nextCount = readRequestCount() + 1;
+        localStorage.setItem(requestCountKey, String(nextCount));
+        updateRequestBadges();
+        const requestNumber = `BM-${new Date().getFullYear()}-${String(Date.now()).slice(-6)}`;
+        const button = form.querySelector('.login-submit');
+        if (button) {
+            button.classList.add('request-sent');
+            button.querySelector('span').textContent = `تم إرسال الطلب — ${requestNumber}`;
+            button.querySelector('b').textContent = '✓';
+            button.disabled = true;
+        }
+    });
+
+    const recoveryModal = document.getElementById('recovery-modal');
+    const recoveryRequestForm = document.getElementById('recovery-request-form');
+    const recoveryVerifyForm = document.getElementById('recovery-verify-form');
+    const recoveryStatus = document.getElementById('recovery-status');
+    const csrfToken = document.querySelector('.reference-login-form input[name="_token"]')?.value;
+
+    const setRecoveryStatus = (message, error = false) => {
+        if (!recoveryStatus) return;
+        recoveryStatus.textContent = message;
+        recoveryStatus.classList.toggle('is-error', error);
+    };
+    const openRecovery = method => {
+        if (!recoveryModal || !recoveryRequestForm) return;
+        const destination = recoveryRequestForm.elements.destination;
+        recoveryRequestForm.elements.method.value = method;
+        destination.type = method === 'email' ? 'email' : 'tel';
+        destination.name = 'destination';
+        destination.placeholder = method === 'email' ? 'admin@bashamob.local' : '2010xxxxxxxx';
+        destination.value = method === 'email' ? (document.querySelector('.reference-login-form [name="email"]')?.value || '') : '';
+        document.getElementById('recovery-destination-label').textContent = method === 'email' ? 'البريد الإلكتروني على Gmail' : 'رقم WhatsApp بكود الدولة';
+        document.getElementById('recovery-copy').textContent = method === 'email' ? 'سنرسل الكود إلى بريدك، وهو صالح لمدة 10 دقائق.' : 'سنرسل الكود إلى رقم WhatsApp المسجل، وهو صالح لمدة 10 دقائق.';
+        recoveryRequestForm.hidden = false;
+        recoveryVerifyForm.hidden = true;
+        recoveryRequestForm.reset();
+        recoveryRequestForm.elements.method.value = method;
+        destination.value = method === 'email' ? (document.querySelector('.reference-login-form [name="email"]')?.value || '') : '';
+        setRecoveryStatus('');
+        recoveryModal.classList.add('is-open');
+        recoveryModal.setAttribute('aria-hidden', 'false');
+        window.setTimeout(() => destination.focus(), 100);
+    };
+    const closeRecovery = () => {
+        recoveryModal?.classList.remove('is-open');
+        recoveryModal?.setAttribute('aria-hidden', 'true');
+    };
+    document.querySelectorAll('[data-recovery-open]').forEach(button => button.addEventListener('click', () => openRecovery(button.dataset.recoveryMethod || 'email')));
+    document.querySelectorAll('[data-recovery-close]').forEach(button => button.addEventListener('click', closeRecovery));
+
+    const submitRecovery = async (form, onSuccess) => {
+        const button = form.querySelector('button[type="submit"]');
+        button.disabled = true;
+        setRecoveryStatus('جاري الاتصال بالخدمة...');
+        try {
+            const response = await fetch(form.action, {
+                method: 'POST',
+                headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': csrfToken, 'Content-Type': 'application/json' },
+                body: JSON.stringify(Object.fromEntries(new FormData(form)))
+            });
+            const payload = await response.json().catch(() => ({ message: 'تعذر الاتصال بخدمة الاسترداد.' }));
+            if (!response.ok) throw new Error(payload.message || Object.values(payload.errors || {})[0]?.[0] || 'تعذر تنفيذ الطلب.');
+            setRecoveryStatus(payload.message);
+            onSuccess(payload);
+        } catch (error) {
+            setRecoveryStatus(error.message, true);
+        } finally {
+            button.disabled = false;
+        }
+    };
+    recoveryRequestForm?.addEventListener('submit', event => {
+        event.preventDefault();
+        if (!recoveryRequestForm.reportValidity()) return;
+        submitRecovery(recoveryRequestForm, payload => {
+            if (!payload.challenge) return;
+            recoveryVerifyForm.elements.challenge.value = payload.challenge;
+            recoveryRequestForm.hidden = true;
+            recoveryVerifyForm.hidden = false;
+            recoveryVerifyForm.elements.code.focus();
+        });
+    });
+    recoveryVerifyForm?.addEventListener('submit', event => {
+        event.preventDefault();
+        if (!recoveryVerifyForm.reportValidity()) return;
+        submitRecovery(recoveryVerifyForm, () => {
+            recoveryVerifyForm.reset();
+            window.setTimeout(closeRecovery, 1800);
+        });
+    });
 });

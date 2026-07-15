@@ -1,0 +1,7 @@
+.sidebar-search{display:flex!important;width:auto!important;height:32px!important;margin:0 4px 9px!important;padding:0 9px!important;background:rgba(2,13,35,.55)!important;border:1px solid rgba(82,139,218,.14)!important;border-radius:8px!important}
+.sidebar-search svg{width:13px!important;color:#56719d!important}
+.sidebar-search input{font-size:8px!important;color:#9cafcf!important}
+.sidebar-search input::placeholder{color:#536b94!important}
+.admin-sidebar nav{min-height:0}
+.admin-sidebar nav a span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.admin-sidebar nav:after{content:"";position:sticky;bottom:0;height:12px;background:linear-gradient(transparent,rgba(5,17,43,.88));pointer-events:none}
