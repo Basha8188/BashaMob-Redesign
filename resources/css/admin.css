@@ -482,3 +482,27 @@ html[data-admin-ui="cosmic"][data-palette="emerald"] .btn-primary{background:lin
         width:min(330px,32vw)!important;transform:translate(-50%,-50%)!important;margin:0!important;
     }
 }
+
+/* Search menus must always paint above page copy, tables and glass panels. */
+html[data-admin-ui="cosmic"] .admin-topbar{
+    z-index:1200!important;overflow:visible!important;
+}
+html[data-admin-ui="cosmic"] .admin-sidebar{
+    z-index:1100!important;
+}
+html[data-admin-ui="cosmic"] .module-panel{
+    overflow:visible!important;
+}
+html[data-admin-ui="cosmic"] .module-panel>.panel-head{
+    position:relative!important;z-index:20!important;overflow:visible!important;
+}
+html[data-admin-ui="cosmic"] .module-panel>.panel-head:has(.system-search.search-open),
+html[data-admin-ui="cosmic"] .system-search.search-open{
+    z-index:1400!important;
+}
+html[data-admin-ui="cosmic"] .system-search-results{
+    z-index:1500!important;isolation:isolate;
+}
+html[data-admin-ui="cosmic"] .admin-content main{
+    position:relative;z-index:1;
+}
