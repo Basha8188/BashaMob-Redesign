@@ -462,3 +462,14 @@ html[data-admin-ui="cosmic"][data-palette="emerald"] .btn-primary{background:lin
 
 /* Keep the enlarged top search exactly centered after adding palette controls. */
 @media(min-width:761px){html[data-admin-ui="cosmic"] .admin-topbar>.topbar-search{left:50%!important;right:auto!important;width:min(330px,32vw)!important;transform:translate(-50%,-50%)!important;z-index:12!important}.admin-palette-picker .theme-picker-toggle{width:34px!important;height:34px!important;border-radius:9px!important}.admin-palette-picker .theme-palette{top:42px!important;left:0!important;right:auto!important}}
+
+/* True three-column topbar: search remains mathematically centered. */
+@media(min-width:761px){
+    html[data-admin-ui="cosmic"] .admin-topbar{display:grid!important;grid-template-columns:minmax(190px,1fr) minmax(245px,330px) minmax(190px,1fr)!important;grid-template-rows:1fr!important;direction:ltr!important}
+    html[data-admin-ui="cosmic"] .admin-topbar>.topbar-page{grid-column:3!important;grid-row:1!important;justify-self:end!important;direction:rtl!important}
+    html[data-admin-ui="cosmic"] .admin-topbar>.topbar-search{position:relative!important;grid-column:2!important;grid-row:1!important;left:auto!important;right:auto!important;top:auto!important;width:100%!important;height:32px!important;margin:0!important;transform:none!important;justify-self:stretch!important;align-self:center!important}
+    html[data-admin-ui="cosmic"] .admin-topbar>.topbar-actions{grid-column:1!important;grid-row:1!important;justify-self:start!important;direction:rtl!important}
+    html[lang="en"][data-admin-ui="cosmic"] .admin-topbar>.topbar-page{grid-column:1!important;justify-self:start!important;direction:ltr!important}
+    html[lang="en"][data-admin-ui="cosmic"] .admin-topbar>.topbar-actions{grid-column:3!important;justify-self:end!important;direction:ltr!important}
+}
+@media(min-width:761px) and (max-width:1100px){html[data-admin-ui="cosmic"] .admin-topbar{grid-template-columns:minmax(145px,1fr) 245px minmax(145px,1fr)!important}.topbar-actions .topbar-clock,.topbar-actions .admin-user{display:none!important}}

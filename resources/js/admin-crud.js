@@ -63,6 +63,39 @@ document.addEventListener('DOMContentLoaded', () => {
     let editingRow = null;
 
     const dataCells = row => [...row.children].filter(cell => !cell.querySelector('.row-actions'));
+    const tableBody = () => document.querySelector('.admin-table tbody');
+    const storageKey = () => `bashamob-admin-records:${module}`;
+    const buildRow = values => {
+        const row = document.createElement('tr');
+        row.dataset.demoRow = '';
+        values.forEach((value, index) => {
+            const cell = document.createElement('td');
+            cell.textContent = value;
+            if (index === values.length - 1) cell.className = 'status-cell';
+            row.append(cell);
+        });
+        const actions = document.createElement('td');
+        actions.innerHTML = `<div class="row-actions">${module === 'sales' ? '<button type="button" data-row-print title="طباعة الفاتورة">▣</button>' : ''}<button type="button" data-row-edit title="تعديل">✎</button><button type="button" data-row-delete title="حذف">×</button></div>`;
+        row.append(actions);
+        return row;
+    };
+    const persistRows = () => {
+        const body = tableBody();
+        if (!body || !module) return;
+        const rows = [...body.rows].map(row => dataCells(row).map(cell => cell.textContent.trim()));
+        localStorage.setItem(storageKey(), JSON.stringify(rows));
+    };
+    const restoreRows = () => {
+        const body = tableBody();
+        if (!body || !module) return;
+        try {
+            const saved = JSON.parse(localStorage.getItem(storageKey()) || 'null');
+            if (!Array.isArray(saved)) return;
+            body.replaceChildren(...saved.map(buildRow));
+        } catch {
+            localStorage.removeItem(storageKey());
+        }
+    };
     const fieldValue = (descriptor) => {
         if (descriptor.type === 'permissions') {
             const checked = [...form.querySelectorAll(`[name="${descriptor.name}"]:checked`)];
@@ -169,6 +202,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (editButton) open(document.querySelector('.admin-table')?.dataset.module, editButton.closest('tr'));
         if (deleteButton && window.confirm(isArabic() ? 'هل تريد حذف هذا السجل؟' : 'Delete this record?')) {
             deleteButton.closest('tr')?.remove();
+            persistRows();
             notify(isArabic() ? 'تم حذف السجل' : 'Record deleted');
         }
     });
@@ -185,24 +219,23 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (editingRow) {
-            dataCells(editingRow).forEach((cell, index) => { if (values[index] !== undefined) cell.textContent = values[index]; });
-        } else {
-            const body = document.querySelector('.admin-table tbody');
-            if (!body) return;
-            const row = document.createElement('tr');
-            row.dataset.demoRow = '';
-            values.forEach((value, index) => {
-                const cell = document.createElement('td');
-                cell.textContent = value;
-                if (index === values.length - 1) cell.className = 'status-cell';
-                row.append(cell);
+            const updatedRow = editingRow;
+            dataCells(editingRow).forEach((cell, index) => {
+                if (values[index] !== undefined) cell.replaceChildren(document.createTextNode(values[index]));
             });
-            const actions = document.createElement('td');
-            actions.innerHTML = `<div class="row-actions">${module === 'sales' ? '<button type="button" data-row-print title="طباعة الفاتورة">▣</button>' : ''}<button type="button" data-row-edit title="تعديل">✎</button><button type="button" data-row-delete title="حذف">×</button></div>`;
-            row.append(actions); body.prepend(row);
+            updatedRow.classList.add('search-hit');
+            window.setTimeout(() => updatedRow.classList.remove('search-hit'), 1800);
+            document.dispatchEvent(new CustomEvent('admin:content-updated', { detail: updatedRow }));
+        } else {
+            const body = tableBody();
+            if (!body) return;
+            body.prepend(buildRow(values));
         }
         const wasEditing = Boolean(editingRow);
+        persistRows();
         close();
         notify(isArabic() ? (wasEditing ? 'تم حفظ التعديلات بنجاح' : `تمت إضافة ${schema.ar} بنجاح`) : (wasEditing ? 'Changes saved successfully' : `${schema.en} added successfully`));
     });
+
+    restoreRows();
 });

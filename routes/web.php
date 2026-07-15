@@ -2,11 +2,13 @@
 
 use App\Http\Controllers\Auth\StaffSessionController;
 use App\Http\Controllers\Auth\StaffRecoveryController;
+use App\Http\Controllers\MaintenanceRequestController;
 use Illuminate\Support\Facades\Route;
 
 Route::view('/', 'pages.home')->name('home');
 Route::view('/shop', 'pages.shop')->name('shop');
 Route::view('/maintenance', 'pages.maintenance')->name('maintenance');
+Route::post('/maintenance/requests', [MaintenanceRequestController::class, 'store'])->middleware('throttle:5,1')->name('maintenance.requests.store');
 Route::view('/computers', 'pages.computers')->name('computers');
 Route::middleware('guest')->group(function () {
     Route::get('/staff/login', [StaffSessionController::class, 'create'])->name('staff.login');
@@ -15,7 +17,7 @@ Route::middleware('guest')->group(function () {
     Route::post('/staff/recovery/verify', [StaffRecoveryController::class, 'verify'])->middleware('throttle:8,1')->name('staff.recovery.verify');
 });
 Route::post('/staff/logout', [StaffSessionController::class, 'destroy'])->middleware('auth')->name('staff.logout');
-Route::view('/customer/device-request', 'pages.customer-device-request')->name('customer.device-request');
+Route::redirect('/customer/device-request', '/maintenance')->name('customer.device-request');
 
 Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
     Route::view('/', 'admin.dashboard')->name('dashboard');

@@ -17,7 +17,7 @@
         </form>
         <div class="reference-divider"><span>استرداد كلمة المرور عبر</span></div>
         <div class="social-login-row recovery-channels"><button type="button" data-recovery-open data-recovery-method="email"><span class="google-mark">G</span>Gmail</button><button type="button" data-recovery-open data-recovery-method="whatsapp"><svg class="whatsapp-mark" viewBox="0 0 24 24"><path d="M20.5 11.7a8.5 8.5 0 0 1-12.6 7.4L3 20.5l1.4-4.7a8.5 8.5 0 1 1 16.1-4.1Z"/><path d="M8.2 7.7c.3-.6.6-.6.9-.6h.5c.2 0 .4.1.5.5l.8 2c.1.3 0 .5-.2.7l-.7.8c-.2.2-.2.4 0 .7.7 1.2 1.7 2.2 3 2.8.3.2.5.1.7-.1l.9-1.1c.2-.2.4-.3.7-.2l2 .9c.3.1.5.3.5.5 0 .4-.2 1.5-.8 2.1-.6.6-1.5.9-2.4.7-1.3-.3-3.8-1.2-5.9-3.1-1.7-1.5-2.9-3.5-3.2-4.8-.3-1.2.2-2.5.7-3.1Z"/></svg>WhatsApp</button></div>
-        <p class="reference-signup">Don't have an account? <a href="{{ route('customer.device-request') }}">Sign up</a></p>
+        <p class="reference-signup">Customer? <a href="{{ route('maintenance') }}">Send a maintenance request</a></p>
     </section>
     <section class="recovery-modal" id="recovery-modal" aria-hidden="true">
         <button class="recovery-backdrop" type="button" data-recovery-close aria-label="Close"></button>

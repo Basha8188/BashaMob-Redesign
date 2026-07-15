@@ -13,8 +13,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }));
 
     const tableItems = () => [...document.querySelectorAll('.admin-table tbody tr')].map(row => {
-        const cells = [...row.querySelectorAll('td')].slice(0, 4).map(cell => cell.textContent.trim()).filter(Boolean);
-        return { type: 'row', title: cells[0], subtitle: cells.slice(0, 4).join(' — '), source: row };
+        const cells = [...row.querySelectorAll('td')]
+            .filter(cell => !cell.querySelector('.row-actions'))
+            .map(cell => cell.textContent.trim()).filter(Boolean);
+        return { type: 'row', title: cells[0], subtitle: cells.join(' — '), source: row };
     });
 
     const closeAll = except => searchBoxes.forEach(box => { if (box !== except) box.classList.remove('search-open'); });
@@ -23,7 +25,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const input = box.querySelector('input[type="search"]');
         const trigger = box.querySelector('.search-orbit');
         const results = box.querySelector('.system-search-results');
+        const scope = box.dataset.searchScope || (box.classList.contains('sidebar-search') ? 'navigation' : 'global');
         let selectedIndex = -1;
+
+        const filterModuleRows = query => {
+            if (scope !== 'module') return;
+            tableItems().forEach(item => {
+                item.source.hidden = Boolean(query) && !normalizeSearch(`${item.title} ${item.subtitle}`).includes(query);
+            });
+        };
 
         const chooseResult = item => {
             if (item.type === 'link') window.location.href = item.href;
@@ -37,7 +47,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const render = () => {
             const query = normalizeSearch(input.value);
-            const allItems = [...navItems(), ...tableItems()];
+            const allItems = scope === 'module' ? tableItems() : (scope === 'navigation' ? navItems() : [...navItems(), ...tableItems()]);
+            filterModuleRows(query);
             const matches = allItems.filter(item => !query || normalizeSearch(`${item.title} ${item.subtitle}`).includes(query)).slice(0, 7);
             results.replaceChildren();
             selectedIndex = -1;
@@ -81,6 +92,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 : Math.max(selectedIndex - 1, 0);
             buttons.forEach((button, index) => button.classList.toggle('selected', index === selectedIndex));
         });
+        input?.addEventListener('search', render);
     });
 
     document.addEventListener('click', event => {

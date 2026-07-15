@@ -14,7 +14,7 @@
 @endphp
 <div class="admin-page-head"><div class="page-title-with-icon"><x-admin-icon :name="$module"/><span><span class="eyebrow">إدارة المحل</span><h1>{{ $meta[0] }}</h1><p>{{ $meta[1] }}</p></span></div><div class="page-actions">@if($module === 'sales')<button class="btn btn-glass" type="button" data-print-invoice><x-admin-icon name="sales"/> طباعة فاتورة</button>@endif<button class="btn btn-primary" type="button" @if($module === 'store') data-store-focus @else data-crud-add data-module="{{ $module }}" @endif>+ {{ $addLabels[$module] }}</button></div></div>
 <section class="admin-panel module-panel glass-panel">
-    <div class="panel-head"><div><h2>{{ $meta[0] }}</h2><p>ابحث وأضف وعدّل بيانات هذا القسم من مكان واحد.</p></div><x-admin.search-bar class="module-search" placeholder="ابحث في النظام..." /></div>
+    <div class="panel-head"><div><h2>{{ $meta[0] }}</h2><p>ابحث وأضف وعدّل بيانات هذا القسم من مكان واحد.</p></div><x-admin.search-bar class="module-search" data-search-scope="module" :placeholder="'بحث في '.$meta[0].'...'" /></div>
     @if($module === 'store')
         <form class="admin-form" data-demo-form><div><label>اسم المحل<input value="BashaMob"></label><label>رقم الهاتف<input value="01012345678"></label></div><div><label>البريد الإلكتروني<input type="email" value="info@bashamob.local"></label><label>الرقم الضريبي<input value="123-456-789"></label></div><label>العنوان<textarea>القاهرة، مصر — شارع التقنية، محل 12</textarea></label><button class="btn btn-primary" type="submit">حفظ بيانات المحل</button></form>
     @elseif(count($rows))

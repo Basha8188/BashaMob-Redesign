@@ -167,7 +167,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const requestCountKey = 'basha-customer-request-count';
-    const readRequestCount = () => Number.parseInt(localStorage.getItem(requestCountKey) || '3', 10) || 0;
+    const serverBadge = document.querySelector('[data-customer-request-badge][data-server-count]');
+    if (serverBadge) localStorage.setItem(requestCountKey, serverBadge.dataset.serverCount || '0');
+    const readRequestCount = () => Number.parseInt(localStorage.getItem(requestCountKey) || '0', 10) || 0;
     const updateRequestBadges = () => document.querySelectorAll('[data-customer-request-badge]').forEach(badge => {
         badge.textContent = String(readRequestCount());
         badge.hidden = readRequestCount() < 1;
@@ -175,20 +177,74 @@ document.addEventListener('DOMContentLoaded', () => {
     updateRequestBadges();
     window.addEventListener('storage', event => { if (event.key === requestCountKey) updateRequestBadges(); });
 
-    document.querySelector('.customer-device-form')?.addEventListener('submit', event => {
+    const storefrontToast = document.getElementById('storefront-toast');
+    let storefrontToastTimer;
+    const showStorefrontToast = message => {
+        if (!storefrontToast) return;
+        storefrontToast.textContent = message;
+        storefrontToast.classList.add('show');
+        window.clearTimeout(storefrontToastTimer);
+        storefrontToastTimer = window.setTimeout(() => storefrontToast.classList.remove('show'), 3200);
+    };
+
+    const productCards = [...document.querySelectorAll('[data-product-card]')];
+    const productSearch = document.querySelector('[data-product-search]');
+    let activeProductFilter = 'all';
+    const normalizeProductText = value => value.toLocaleLowerCase().replace(/[\u064B-\u065F\u0670]/g, '').replace(/[أإآ]/g, 'ا').replace(/ة/g, 'ه').trim();
+    const filterProducts = () => {
+        const query = normalizeProductText(productSearch?.value || '');
+        productCards.forEach(card => {
+            const matchesType = activeProductFilter === 'all'
+                || card.dataset.kind === activeProductFilter
+                || (activeProductFilter === 'offers' && card.dataset.offer === '1');
+            const matchesText = !query || normalizeProductText(card.dataset.productName || card.textContent).includes(query);
+            card.hidden = !(matchesType && matchesText);
+        });
+    };
+    document.querySelectorAll('[data-product-filter]').forEach(button => button.addEventListener('click', () => {
+        activeProductFilter = button.dataset.productFilter;
+        document.querySelectorAll('[data-product-filter]').forEach(item => item.classList.toggle('active', item === button));
+        filterProducts();
+    }));
+    productSearch?.addEventListener('input', filterProducts);
+
+    document.addEventListener('click', event => {
+        const addButton = event.target.closest('[data-add-product]');
+        if (!addButton) return;
+        const card = addButton.closest('[data-product-card]');
+        const name = card?.querySelector('h3')?.textContent.trim() || 'المنتج';
+        const cart = JSON.parse(localStorage.getItem('basha-customer-cart') || '[]');
+        cart.push({ name, addedAt: new Date().toISOString() });
+        localStorage.setItem('basha-customer-cart', JSON.stringify(cart));
+        addButton.textContent = '✓';
+        addButton.classList.add('is-added');
+        showStorefrontToast(`تمت إضافة ${name} إلى اختياراتك`);
+    });
+
+    document.querySelector('[data-quick-maintenance]')?.addEventListener('submit', async event => {
         event.preventDefault();
         const form = event.currentTarget;
         if (!form.reportValidity()) return;
-        const nextCount = readRequestCount() + 1;
-        localStorage.setItem(requestCountKey, String(nextCount));
-        updateRequestBadges();
-        const requestNumber = `BM-${new Date().getFullYear()}-${String(Date.now()).slice(-6)}`;
-        const button = form.querySelector('.login-submit');
-        if (button) {
-            button.classList.add('request-sent');
-            button.querySelector('span').textContent = `تم إرسال الطلب — ${requestNumber}`;
-            button.querySelector('b').textContent = '✓';
-            button.disabled = true;
+        const result = form.querySelector('.quick-maintenance-result');
+        const button = form.querySelector('button[type="submit"]');
+        button.disabled = true;
+        if (result) result.textContent = 'جاري تسجيل البيانات وإرسال رسالة التأكيد...';
+        try {
+            const response = await fetch(form.action, {
+                method: 'POST',
+                headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': form.elements._token.value },
+                body: new FormData(form)
+            });
+            const payload = await response.json().catch(() => ({ message: 'تعذر تسجيل الطلب الآن.' }));
+            if (!response.ok) throw new Error(payload.message || Object.values(payload.errors || {})[0]?.[0] || 'تعذر تسجيل الطلب الآن.');
+            localStorage.setItem(requestCountKey, String(payload.pending_count || readRequestCount() + 1));
+            updateRequestBadges();
+            if (result) result.textContent = `${payload.message} رقم المتابعة: ${payload.request_number}`;
+            showStorefrontToast(`تم تسجيل الطلب ${payload.request_number} وهو قيد المراجعة`);
+            form.reset();
+        } catch (error) {
+            if (result) result.textContent = error.message;
+            button.disabled = false;
         }
     });
 
