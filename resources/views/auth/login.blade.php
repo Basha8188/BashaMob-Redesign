@@ -28,7 +28,7 @@
                 <input type="hidden" name="method" value="email"><label><span id="recovery-destination-label">البريد الإلكتروني</span><input name="destination" type="email" autocomplete="email" required placeholder="admin@bashamob.local"></label>
                 <button type="submit">إرسال كود التحقق</button>
             </form>
-            <form id="recovery-verify-form" action="{{ route('staff.recovery.verify') }}" hidden>
+            <form id="recovery-verify-form" action="{{ route('staff.recovery.verify') }}" data-reset-action="{{ route('staff.recovery.reset') }}" hidden>
                 <input type="hidden" name="challenge"><label><span>كود التحقق</span><input name="code" inputmode="numeric" maxlength="6" pattern="[0-9]{6}" required placeholder="000000"></label>
                 <label><span>كلمة المرور الجديدة</span><input name="password" type="password" minlength="8" required></label><label><span>تأكيد كلمة المرور</span><input name="password_confirmation" type="password" minlength="8" required></label>
                 <button type="submit">حفظ كلمة المرور</button>

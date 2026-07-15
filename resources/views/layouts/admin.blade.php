@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'الإدارة') | BashaMob</title>
     <script>(()=>{const l=localStorage.getItem('basha-admin-language')||'ar';document.documentElement.lang=l;document.documentElement.dir=l==='ar'?'rtl':'ltr';document.documentElement.dataset.locale=l;document.documentElement.dataset.theme=localStorage.getItem('basha-theme')||'dark';document.documentElement.dataset.palette=localStorage.getItem('basha-palette')||'ocean';document.documentElement.dataset.adminUi='cosmic'})();</script>
     @vite(['resources/css/app.css', 'resources/css/admin.css', 'resources/js/app.js'])

@@ -61,13 +61,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let module = document.querySelector('[data-crud-add]')?.dataset.module || document.querySelector('.admin-table')?.dataset.module;
     let editingRow = null;
+    const serverModules = new Set(['products', 'customers', 'suppliers', 'team']);
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
 
     const dataCells = row => [...row.children].filter(cell => !cell.querySelector('.row-actions'));
     const tableBody = () => document.querySelector('.admin-table tbody');
     const storageKey = () => `bashamob-admin-records:${module}`;
-    const buildRow = values => {
+    const buildRow = (values, id = '') => {
         const row = document.createElement('tr');
-        row.dataset.demoRow = '';
+        if (id) row.dataset.recordId = String(id);
         values.forEach((value, index) => {
             const cell = document.createElement('td');
             cell.textContent = value;
@@ -79,23 +81,7 @@ document.addEventListener('DOMContentLoaded', () => {
         row.append(actions);
         return row;
     };
-    const persistRows = () => {
-        const body = tableBody();
-        if (!body || !module) return;
-        const rows = [...body.rows].map(row => dataCells(row).map(cell => cell.textContent.trim()));
-        localStorage.setItem(storageKey(), JSON.stringify(rows));
-    };
-    const restoreRows = () => {
-        const body = tableBody();
-        if (!body || !module) return;
-        try {
-            const saved = JSON.parse(localStorage.getItem(storageKey()) || 'null');
-            if (!Array.isArray(saved)) return;
-            body.replaceChildren(...saved.map(buildRow));
-        } catch {
-            localStorage.removeItem(storageKey());
-        }
-    };
+    const persistRows = () => {};
     const fieldValue = (descriptor) => {
         if (descriptor.type === 'permissions') {
             const checked = [...form.querySelectorAll(`[name="${descriptor.name}"]:checked`)];
@@ -194,27 +180,60 @@ document.addEventListener('DOMContentLoaded', () => {
         editingRow = null;
     };
 
-    document.addEventListener('click', event => {
+    document.addEventListener('click', async event => {
         const addButton = event.target.closest('[data-crud-add]');
         const editButton = event.target.closest('[data-row-edit]');
         const deleteButton = event.target.closest('[data-row-delete]');
         if (addButton) open(addButton.dataset.module);
         if (editButton) open(document.querySelector('.admin-table')?.dataset.module, editButton.closest('tr'));
         if (deleteButton && window.confirm(isArabic() ? 'هل تريد حذف هذا السجل؟' : 'Delete this record?')) {
-            deleteButton.closest('tr')?.remove();
-            persistRows();
-            notify(isArabic() ? 'تم حذف السجل' : 'Record deleted');
+            const row = deleteButton.closest('tr');
+            if (serverModules.has(module) && row?.dataset.recordId) {
+                try {
+                    const response = await fetch(`/admin/${module}/${row.dataset.recordId}`, { method: 'DELETE', headers: { 'Accept':'application/json', 'X-CSRF-TOKEN':csrfToken } });
+                    const payload = await response.json().catch(() => ({ message:'تعذر حذف السجل.' }));
+                    if (!response.ok) throw new Error(payload.message || 'تعذر حذف السجل.');
+                    row.remove(); notify(payload.message);
+                } catch (error) { notify(error.message); }
+            } else {
+                row?.remove();
+                notify(isArabic() ? 'تم حذف السجل' : 'Record deleted');
+            }
         }
     });
     document.querySelectorAll('[data-close-modal]').forEach(button => button.addEventListener('click', close));
     document.addEventListener('keydown', event => { if (event.key === 'Escape') close(); });
 
-    form.addEventListener('submit', event => {
+    form.addEventListener('submit', async event => {
         event.preventDefault();
         const schema = schemas[module];
         const values = schema.fields.map(field => fieldValue(field));
         if (schema.fields.some((field, index) => field.required !== false && !values[index])) {
             notify(isArabic() ? 'أكمل كل البيانات المطلوبة' : 'Complete all required fields');
+            return;
+        }
+
+        if (serverModules.has(module)) {
+            const button = form.querySelector('button[type="submit"]');
+            const payloadData = Object.fromEntries(schema.fields.map((field, index) => [field.name, values[index]]));
+            const recordId = editingRow?.dataset.recordId;
+            button.disabled = true;
+            try {
+                const response = await fetch(`/admin/${module}${recordId ? `/${recordId}` : ''}`, {
+                    method: recordId ? 'PATCH' : 'POST',
+                    headers: { 'Accept':'application/json', 'Content-Type':'application/json', 'X-CSRF-TOKEN':csrfToken },
+                    body: JSON.stringify(payloadData)
+                });
+                const payload = await response.json().catch(() => ({ message:'تعذر حفظ البيانات.' }));
+                if (!response.ok) throw new Error(payload.message || Object.values(payload.errors || {})[0]?.[0] || 'تعذر حفظ البيانات.');
+                const saved = payload.row;
+                if (editingRow) {
+                    editingRow.dataset.recordId = String(saved.id);
+                    dataCells(editingRow).forEach((cell, index) => cell.replaceChildren(document.createTextNode(saved.cells[index] ?? '')));
+                } else if (tableBody()) tableBody().prepend(buildRow(saved.cells, saved.id));
+                close(); notify(payload.message);
+            } catch (error) { notify(error.message); }
+            finally { button.disabled = false; }
             return;
         }
 
@@ -237,5 +256,4 @@ document.addEventListener('DOMContentLoaded', () => {
         notify(isArabic() ? (wasEditing ? 'تم حفظ التعديلات بنجاح' : `تمت إضافة ${schema.ar} بنجاح`) : (wasEditing ? 'Changes saved successfully' : `${schema.en} added successfully`));
     });
 
-    restoreRows();
 });

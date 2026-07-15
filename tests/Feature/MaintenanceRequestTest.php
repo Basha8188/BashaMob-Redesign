@@ -2,10 +2,10 @@
 
 namespace Tests\Feature;
 
-use App\Mail\MaintenanceRequestReceived;
+use App\Jobs\SendMaintenanceRequestConfirmation;
 use App\Models\MaintenanceRequest;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Queue;
 use Tests\TestCase;
 
 class MaintenanceRequestTest extends TestCase
@@ -14,7 +14,7 @@ class MaintenanceRequestTest extends TestCase
 
     public function test_customer_request_is_saved_and_confirmation_email_is_sent(): void
     {
-        Mail::fake();
+        Queue::fake();
 
         $response = $this->postJson(route('maintenance.requests.store'), [
             'name' => 'أحمد محمد',
@@ -32,12 +32,12 @@ class MaintenanceRequestTest extends TestCase
         $request = MaintenanceRequest::firstOrFail();
         $this->assertSame('pending_review', $request->status);
         $this->assertSame('ahmed@example.com', $request->email);
-        Mail::assertSent(MaintenanceRequestReceived::class, fn ($mail) => $mail->hasTo('ahmed@example.com'));
+        Queue::assertPushed(SendMaintenanceRequestConfirmation::class, fn ($job) => $job->requestId === $request->id);
     }
 
     public function test_customer_request_requires_valid_contact_and_device_data(): void
     {
-        Mail::fake();
+        Queue::fake();
 
         $this->postJson(route('maintenance.requests.store'), [
             'name' => '',
@@ -49,6 +49,6 @@ class MaintenanceRequestTest extends TestCase
         ])->assertUnprocessable()->assertJsonValidationErrors(['name', 'email', 'phone', 'device', 'brand', 'problem']);
 
         $this->assertDatabaseCount('maintenance_requests', 0);
-        Mail::assertNothingSent();
+        Queue::assertNothingPushed();
     }
 }

@@ -2,11 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Mail\MaintenanceRequestReceived;
+use App\Jobs\SendMaintenanceRequestConfirmation;
 use App\Models\MaintenanceRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Mail;
 
 class MaintenanceRequestController extends Controller
 {
@@ -27,7 +26,7 @@ class MaintenanceRequestController extends Controller
             'status' => 'pending_review',
         ]);
 
-        Mail::to($maintenanceRequest->email)->send(new MaintenanceRequestReceived($maintenanceRequest));
+        SendMaintenanceRequestConfirmation::dispatch($maintenanceRequest->id);
 
         return response()->json([
             'message' => 'تم تسجيل بياناتك والطلب قيد المراجعة، وتم إرسال رسالة تأكيد إلى بريدك الإلكتروني.',

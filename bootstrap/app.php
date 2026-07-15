@@ -1,8 +1,12 @@
 <?php
 
+use App\Http\Middleware\EnsureActiveStaff;
+use App\Http\Middleware\EnsureModulePermission;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Spatie\Permission\Middleware\PermissionMiddleware;
+use Spatie\Permission\Middleware\RoleMiddleware;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -13,6 +17,12 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->redirectGuestsTo(fn () => route('staff.login'));
         $middleware->redirectUsersTo(fn () => route('admin.dashboard'));
+        $middleware->alias([
+            'staff' => EnsureActiveStaff::class,
+            'module.permission' => EnsureModulePermission::class,
+            'role' => RoleMiddleware::class,
+            'permission' => PermissionMiddleware::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

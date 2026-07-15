@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\User;
+use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -21,7 +22,10 @@ class ApplicationRoutesTest extends TestCase
 
     public function test_every_admin_module_is_available_to_authenticated_staff(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->seed(RolePermissionSeeder::class);
+        $user = User::factory()->create();
+        $user->assignRole('Owner');
+        $this->actingAs($user);
 
         $this->get(route('admin.dashboard'))->assertOk();
 
@@ -32,7 +36,10 @@ class ApplicationRoutesTest extends TestCase
 
     public function test_unknown_admin_module_returns_not_found(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->seed(RolePermissionSeeder::class);
+        $user = User::factory()->create();
+        $user->assignRole('Owner');
+        $this->actingAs($user);
         $this->get(route('admin.module', 'unknown'))->assertNotFound();
     }
 }

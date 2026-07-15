@@ -299,7 +299,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const payload = await response.json().catch(() => ({ message: 'تعذر الاتصال بخدمة الاسترداد.' }));
             if (!response.ok) throw new Error(payload.message || Object.values(payload.errors || {})[0]?.[0] || 'تعذر تنفيذ الطلب.');
             setRecoveryStatus(payload.message);
-            onSuccess(payload);
+            await onSuccess(payload);
         } catch (error) {
             setRecoveryStatus(error.message, true);
         } finally {
@@ -320,7 +320,20 @@ document.addEventListener('DOMContentLoaded', () => {
     recoveryVerifyForm?.addEventListener('submit', event => {
         event.preventDefault();
         if (!recoveryVerifyForm.reportValidity()) return;
-        submitRecovery(recoveryVerifyForm, () => {
+        submitRecovery(recoveryVerifyForm, async payload => {
+            if (!payload.reset_token) throw new Error('تعذر إنشاء رمز تغيير كلمة المرور.');
+            const resetResponse = await fetch(recoveryVerifyForm.dataset.resetAction, {
+                method: 'POST',
+                headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': csrfToken, 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    reset_token: payload.reset_token,
+                    password: recoveryVerifyForm.elements.password.value,
+                    password_confirmation: recoveryVerifyForm.elements.password_confirmation.value
+                })
+            });
+            const resetPayload = await resetResponse.json().catch(() => ({ message: 'تعذر تغيير كلمة المرور.' }));
+            if (!resetResponse.ok) throw new Error(resetPayload.message || Object.values(resetPayload.errors || {})[0]?.[0] || 'تعذر تغيير كلمة المرور.');
+            setRecoveryStatus(resetPayload.message);
             recoveryVerifyForm.reset();
             window.setTimeout(closeRecovery, 1800);
         });

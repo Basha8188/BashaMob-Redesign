@@ -25,7 +25,13 @@ class StaffLoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
+        if (! Auth::attempt([
+            'email' => $this->string('email')->lower()->toString(),
+            'password' => $this->string('password')->toString(),
+            'is_staff' => true,
+            'is_active' => true,
+        ], $this->boolean('remember')) || Auth::user()?->suspended_at) {
+            Auth::logout();
             RateLimiter::hit($this->throttleKey());
             throw ValidationException::withMessages(['email' => 'بيانات تسجيل الدخول غير صحيحة.']);
         }
