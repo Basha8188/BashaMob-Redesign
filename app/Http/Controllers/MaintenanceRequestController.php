@@ -9,6 +9,37 @@ use Illuminate\Http\Request;
 
 class MaintenanceRequestController extends Controller
 {
+    public function track(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'query' => ['required', 'string', 'min:3', 'max:120'],
+        ]);
+
+        $query = trim($validated['query']);
+        $phone = preg_replace('/\D+/', '', $query);
+        $requests = MaintenanceRequest::query()
+            ->where('request_number', $query)
+            ->orWhere('phone', $phone)
+            ->orWhere('name', $query)
+            ->latest()
+            ->limit(5)
+            ->get()
+            ->map(fn (MaintenanceRequest $maintenanceRequest) => [
+                'request_number' => $maintenanceRequest->request_number,
+                'name' => $maintenanceRequest->name,
+                'device' => $maintenanceRequest->device,
+                'brand' => $maintenanceRequest->brand,
+                'status' => $this->statusLabel($maintenanceRequest->status),
+                'status_key' => $maintenanceRequest->status,
+                'submitted_at' => $maintenanceRequest->created_at->translatedFormat('j F Y، g:i a'),
+            ]);
+
+        return response()->json([
+            'message' => $requests->isEmpty() ? 'لم نجد طلبًا مطابقًا. تأكد من رقم الطلب أو الهاتف أو الاسم بالكامل.' : 'تم العثور على طلبك.',
+            'requests' => $requests,
+        ]);
+    }
+
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
@@ -42,5 +73,19 @@ class MaintenanceRequestController extends Controller
         } while (MaintenanceRequest::where('request_number', $number)->exists());
 
         return $number;
+    }
+
+    private function statusLabel(string $status): string
+    {
+        return match ($status) {
+            'pending_review' => 'قيد المراجعة',
+            'received' => 'تم استلام الجهاز',
+            'in_progress' => 'قيد الإصلاح',
+            'waiting_parts' => 'بانتظار قطعة غيار',
+            'ready_for_delivery' => 'جاهز للاستلام',
+            'delivered' => 'تم التسليم',
+            'cancelled' => 'ملغي',
+            default => 'قيد المتابعة',
+        };
     }
 }

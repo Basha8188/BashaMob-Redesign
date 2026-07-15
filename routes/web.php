@@ -26,6 +26,7 @@ Route::view('/', 'pages.home')->name('home');
 Route::view('/shop', 'pages.shop')->name('shop');
 Route::view('/maintenance', 'pages.maintenance')->name('maintenance');
 Route::post('/maintenance/requests', [MaintenanceRequestController::class, 'store'])->middleware('throttle:5,1')->name('maintenance.requests.store');
+Route::post('/maintenance/track', [MaintenanceRequestController::class, 'track'])->middleware('throttle:10,1')->name('maintenance.requests.track');
 Route::view('/computers', 'pages.computers')->name('computers');
 Route::redirect('/customer/device-request', '/maintenance')->name('customer.device-request');
 

@@ -51,4 +51,34 @@ class MaintenanceRequestTest extends TestCase
         $this->assertDatabaseCount('maintenance_requests', 0);
         Queue::assertNothingPushed();
     }
+
+    public function test_customer_can_track_request_by_number_phone_or_exact_name(): void
+    {
+        $request = MaintenanceRequest::create([
+            'request_number' => 'BM-2026-123456',
+            'name' => 'أحمد محمد',
+            'email' => 'ahmed@example.com',
+            'phone' => '01012345678',
+            'device' => 'موبايل',
+            'brand' => 'Apple',
+            'problem' => 'الشاشة لا تعمل',
+            'status' => 'in_progress',
+        ]);
+
+        foreach ([$request->request_number, $request->phone, $request->name] as $query) {
+            $this->postJson(route('maintenance.requests.track'), ['query' => $query])
+                ->assertOk()
+                ->assertJsonPath('requests.0.request_number', $request->request_number)
+                ->assertJsonPath('requests.0.status', 'قيد الإصلاح')
+                ->assertJsonMissingPath('requests.0.email')
+                ->assertJsonMissingPath('requests.0.problem');
+        }
+    }
+
+    public function test_tracking_returns_a_safe_empty_result_for_unknown_request(): void
+    {
+        $this->postJson(route('maintenance.requests.track'), ['query' => 'BM-UNKNOWN'])
+            ->assertOk()
+            ->assertJsonCount(0, 'requests');
+    }
 }

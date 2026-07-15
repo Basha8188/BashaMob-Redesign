@@ -266,11 +266,57 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!response.ok) throw new Error(payload.message || Object.values(payload.errors || {})[0]?.[0] || 'تعذر تسجيل الطلب الآن.');
             localStorage.setItem(requestCountKey, String(payload.pending_count || readRequestCount() + 1));
             updateRequestBadges();
-            if (result) result.textContent = `${payload.message} رقم المتابعة: ${payload.request_number}`;
-            showStorefrontToast(`تم تسجيل الطلب ${payload.request_number} وهو قيد المراجعة`);
+            const launch = document.querySelector('[data-request-launch]');
+            const launchNumber = launch?.querySelector('[data-launch-number]');
+            if (launchNumber) launchNumber.textContent = payload.request_number;
+            launch?.classList.add('is-active');
+            launch?.setAttribute('aria-hidden', 'false');
+            if (result) result.textContent = `تم استلام الطلب. رقم المتابعة: ${payload.request_number}`;
+            window.setTimeout(() => {
+                launch?.classList.remove('is-active');
+                launch?.setAttribute('aria-hidden', 'true');
+                showStorefrontToast(`تم تسجيل الطلب ${payload.request_number} وهو قيد المراجعة`);
+                button.disabled = false;
+            }, 2600);
             form.reset();
         } catch (error) {
             if (result) result.textContent = error.message;
+            button.disabled = false;
+        }
+    });
+
+    document.querySelector('[data-maintenance-track]')?.addEventListener('submit', async event => {
+        event.preventDefault();
+        const form = event.currentTarget;
+        if (!form.reportValidity()) return;
+        const button = form.querySelector('button[type="submit"]');
+        const results = document.querySelector('[data-tracking-results]');
+        button.disabled = true;
+        if (results) results.innerHTML = '<p class="tracking-loading">جاري البحث عن طلبك...</p>';
+        try {
+            const response = await fetch(form.action, { method: 'POST', headers: { Accept: 'application/json', 'X-CSRF-TOKEN': form.elements._token.value }, body: new FormData(form) });
+            const payload = await response.json();
+            if (!response.ok) throw new Error(payload.message || Object.values(payload.errors || {})[0]?.[0] || 'تعذر الاستعلام الآن.');
+            if (!results) return;
+            if (!payload.requests.length) {
+                results.innerHTML = `<p class="tracking-empty">${payload.message}</p>`;
+                return;
+            }
+            results.replaceChildren(...payload.requests.map(request => {
+                const card = document.createElement('article');
+                card.className = `tracking-card status-${request.status_key}`;
+                const heading = document.createElement('div');
+                const number = document.createElement('strong'); number.textContent = request.request_number;
+                const status = document.createElement('b'); status.textContent = request.status;
+                heading.append(number, status);
+                const details = document.createElement('p'); details.textContent = `${request.name} — ${request.brand} ${request.device}`;
+                const date = document.createElement('small'); date.textContent = `تاريخ التسجيل: ${request.submitted_at}`;
+                card.append(heading, details, date);
+                return card;
+            }));
+        } catch (error) {
+            if (results) results.innerHTML = `<p class="tracking-empty">${error.message}</p>`;
+        } finally {
             button.disabled = false;
         }
     });
