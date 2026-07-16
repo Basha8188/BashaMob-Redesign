@@ -7,13 +7,18 @@ use App\Http\Requests\Auth\StaffLoginRequest;
 use App\Services\ActivityLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\View\View;
+use Illuminate\Http\Response;
 
 class StaffSessionController extends Controller
 {
-    public function create(): View
+    public function create(Request $request): Response
     {
-        return view('auth.login');
+        $request->session()->regenerateToken();
+
+        return response()
+            ->view('auth.login')
+            ->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+            ->header('Pragma', 'no-cache');
     }
 
     public function store(StaffLoginRequest $request): RedirectResponse
