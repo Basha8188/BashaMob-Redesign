@@ -7,6 +7,11 @@
         <span class="eyebrow"><i></i> كل التكنولوجيا في مكان واحد</span>
         <h1>اختيارك الصح<br><span>يبدأ من باشا موب.</span></h1>
         <p>أحدث الموبايلات والكمبيوتر والإكسسوارات، مع مركز صيانة محترف يهتم بجهازك من أول فحص لحد الاستلام.</p>
+        <div class="hero-service-note">
+            <span>مركز صيانة متكامل</span>
+            <strong>جهازك في إيد أمينة.</strong>
+            <small>فحص دقيق، سعر واضح، وتحديث مستمر لحالة الصيانة.</small>
+        </div>
         <div class="hero-actions">
             <a class="btn btn-primary" href="{{ route('shop') }}">تسوّق الآن <span>←</span></a>
             <a class="btn btn-glass" href="{{ route('maintenance') }}">احجز صيانة</a>
@@ -27,20 +32,5 @@
     <article><span class="pulse-icon"><svg viewBox="0 0 24 24"><path d="M4 7h16v11H4V7Zm3-3h10v3M8 12h8"/></svg></span><div><strong>صيانة محترفة</strong><small>فحص دقيق وتحديث مستمر</small></div><b>متابعة</b></article>
     <article><span class="pulse-icon"><svg viewBox="0 0 24 24"><path d="M3 7h12v9H3V7Zm12 3h4l2 3v3h-6v-6ZM7 20a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm10 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/></svg></span><div><strong>توصيل سريع</strong><small>وتغليف آمن لطلبك</small></div><b>سريع</b></article>
     <article><span class="pulse-icon"><svg viewBox="0 0 24 24"><path d="M6 3h12v18H6V3Zm3 4h6m-6 4h6m-4 6h2"/></svg></span><div><strong>طلبك واضح</strong><small>رقم متابعة لكل جهاز</small></div><b>24/7</b></article>
-</section>
-
-<section class="container section">
-    <div class="section-head"><div><span class="eyebrow">اكتشف أقسامنا</span><h2>كل اللي محتاجه، أقرب لك</h2></div><a href="{{ route('shop') }}">عرض الكل ←</a></div>
-    <div class="category-grid">
-        <x-category-card title="الموبايلات" count="أحدث الموديلات" link="{{ route('shop') }}" icon="phone" />
-        <x-category-card title="الكمبيوتر" count="أجهزة لكل استخدام" link="{{ route('computers') }}" icon="laptop" />
-        <x-category-card title="الإكسسوارات" count="اختيارات أصلية" link="{{ route('shop') }}" icon="headphones" />
-        <x-category-card title="مركز الصيانة" count="فنيون متخصصون" link="{{ route('maintenance') }}" icon="tools" />
-    </div>
-</section>
-
-<section class="container section service-banner">
-    <div><span class="eyebrow light">مركز صيانة متكامل</span><h2>جهازك في إيد أمينة.</h2><p>فحص دقيق، سعر واضح، وتحديث مستمر لحالة الصيانة.</p><a class="btn btn-light" href="{{ route('maintenance') }}">ابدأ طلب الصيانة</a></div>
-    <div class="repair-orbit"><span>⚙</span><i></i><i></i><i></i></div>
 </section>
 @endsection
