@@ -461,3 +461,32 @@ html[data-theme="light"] .customer-pulse-grid article{background:linear-gradient
 html[data-theme="light"] .storefront-body .inner-hero,html[data-theme="light"] .storefront-body .filter-bar,html[data-theme="light"] .storefront-body .product-card,html[data-theme="light"] .storefront-body .feature-strip,html[data-theme="light"] .storefront-body .steps-card,html[data-theme="light"] .storefront-body .glass-form,html[data-theme="light"] .storefront-body .customer-portal-link{background:linear-gradient(145deg,rgba(255,255,255,.64),rgba(219,235,247,.4))!important;border-color:rgba(50,104,160,.17)!important;box-shadow:0 13px 29px rgba(49,79,113,.08),inset 0 1px #fff!important}html[data-theme="light"] .storefront-body .inner-hero h1,html[data-theme="light"] .storefront-body .product-info h3,html[data-theme="light"] .storefront-body .product-info strong,html[data-theme="light"] .storefront-body .feature-strip b,html[data-theme="light"] .storefront-body .steps-card h2,html[data-theme="light"] .storefront-body .glass-form h2,html[data-theme="light"] .storefront-body .step strong{color:#123450!important}html[data-theme="light"] .storefront-body .inner-hero p,html[data-theme="light"] .storefront-body .step small,html[data-theme="light"] .storefront-body .feature-strip span{color:#526b83!important}html[data-theme="light"] .storefront-body .filter-bar input,html[data-theme="light"] .storefront-body .glass-form input,html[data-theme="light"] .storefront-body .glass-form select,html[data-theme="light"] .storefront-body .glass-form textarea{background:rgba(255,255,255,.5)!important;color:#153854!important;border-color:rgba(52,106,161,.18)!important}html[data-theme="light"] .storefront-body .filter-bar button.active{color:#174d78!important}
 @media(max-width:760px){.storefront-body .inner-hero{width:calc(100% - 20px);padding:35px 18px 30px!important}.storefront-body .products-grid,.storefront-body .products-grid.three{grid-template-columns:repeat(2,1fr)!important}.storefront-body .filter-bar{overflow:auto}.storefront-body .two-column{grid-template-columns:1fr!important}}
 @media(max-width:440px){.storefront-body .products-grid,.storefront-body .products-grid.three{grid-template-columns:1fr!important}}
+
+/* Ocean storefront: use the exact blue system palette from the admin UI. */
+html[data-palette="ocean"][data-theme="dark"] body.storefront-body{
+    --bm-page-bg:#050b1e;--bm-bg:#050b1e;--bm-bg-soft:#081631;
+    --bm-sidebar:#071936;--bm-topbar:#081b3d;
+    --bm-surface:#0a2046;--bm-surface-solid:#0a2046;--bm-surface-hover:#102b58;
+    --bm-selected:rgba(41,126,226,.2);
+    --bm-primary:#3a8df4;--bm-primary-hover:#58a8ff;--bm-primary-active:#2876d4;
+    --bm-primary-soft:rgba(51,132,232,.14);--bm-primary-border:rgba(76,151,239,.24);
+    --bm-secondary:#287fd3;--bm-accent:#41cee1;--bm-accent-hover:#64ddeb;
+    --bm-text:#edf5ff;--bm-text-secondary:#bdcbe3;--bm-text-muted:#7184aa;
+    --bm-border:rgba(84,143,225,.17);--bm-border-strong:rgba(91,155,239,.28);
+    --bm-glass-bg:rgba(7,22,55,.76);--bm-glass-border:rgba(84,143,225,.17);
+    background:#050b1e!important;color:#edf5ff!important
+}
+html[data-palette="ocean"][data-theme="dark"] .storefront-body .aurora{
+    background:radial-gradient(circle at 54% -12%,rgba(17,92,190,.38),transparent 43%),radial-gradient(circle at 12% 88%,rgba(0,133,190,.15),transparent 36%),linear-gradient(145deg,#030a1b 0%,#06162f 50%,#03142b 100%)!important
+}
+html[data-palette="ocean"][data-theme="dark"] .storefront-body .aurora:after{
+    background:repeating-radial-gradient(ellipse at 35% 65%,transparent 0 75px,rgba(22,112,193,.1) 79px,transparent 86px)!important;opacity:.65!important
+}
+html[data-palette="ocean"][data-theme="dark"] .storefront-body :is(.liquid-nav,.admin-entry,.hero,.inner-hero,.filter-bar,.product-card,.feature-strip,.steps-card,.glass-form,.customer-portal-link,.category-card,.customer-pulse-grid article){
+    background:linear-gradient(145deg,rgba(9,28,65,.88),rgba(6,20,49,.84))!important;
+    border-color:rgba(84,143,225,.17)!important;
+    box-shadow:0 18px 45px rgba(0,0,0,.2),inset 0 1px rgba(177,215,255,.08)!important
+}
+html[data-palette="ocean"][data-theme="dark"] .storefront-body :is(.glass-form input,.glass-form select,.glass-form textarea,.filter-bar input){
+    background:rgba(3,15,39,.72)!important;border-color:rgba(75,143,230,.2)!important;color:#edf5ff!important
+}
