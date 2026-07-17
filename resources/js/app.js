@@ -279,13 +279,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 [4100, 'العربية في الطريق لمركز الصيانة'],
                 [5500, 'وصل طلبك عندنا بأمان ✓']
             ];
-            deliveryStages.forEach(([delay, message]) => window.setTimeout(() => {
+            deliveryStages.forEach(([delay, message], stage) => window.setTimeout(() => {
                 if (deliveryStatus) deliveryStatus.textContent = message;
+                if (launch) launch.dataset.deliveryStage = String(stage + 1);
             }, delay));
             if (result) result.textContent = `تم استلام الطلب. رقم المتابعة: ${payload.request_number}`;
             window.setTimeout(() => {
                 launch?.classList.remove('is-active');
                 launch?.setAttribute('aria-hidden', 'true');
+                launch?.removeAttribute('data-delivery-stage');
                 showStorefrontToast(`تم تسجيل الطلب ${payload.request_number} وهو قيد المراجعة`);
                 button.disabled = false;
             }, 6200);
