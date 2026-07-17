@@ -2,6 +2,10 @@
 @section('title', 'الصيانة')
 @php($activePage = 'maintenance')
 @section('content')
+<section class="container maintenance-tracking maintenance-tracking-top glass-form" id="track">
+    <div class="tracking-copy"><span class="eyebrow">متابعة سريعة</span><h2>استعلم عن طلبك</h2><p>اكتب رقم الطلب، رقم الموبايل، أو الاسم بالكامل لمعرفة آخر حالة مسجلة.</p></div>
+    <form data-maintenance-track action="{{ route('maintenance.requests.track') }}" method="POST">@csrf<label><span class="sr-only">بيانات البحث عن الطلب</span><input name="query" required minlength="3" type="search" placeholder="مثال: BM-2026-123456 أو 01xxxxxxxxx"><button class="btn btn-primary" type="submit">استعلام عن الطلب</button></label></form>
+</section>
 <x-page-hero eyebrow="صيانة باحتراف" title="هنرجّع جهازك كأنه جديد" text="احجز طلبك في دقيقة، وسيب الباقي على فنيين باشا موب." />
 <section class="container section compact two-column">
     <div class="steps-card">
@@ -20,11 +24,14 @@
         <button class="btn btn-primary" type="submit">إرسال الطلب</button><p class="quick-maintenance-result" role="status"></p>
     </form>
 </section>
-<section class="container maintenance-tracking glass-form">
-    <div class="tracking-copy"><span class="eyebrow">متابعة سريعة</span><h2>استعلم عن طلبك</h2><p>اكتب رقم الطلب، رقم الموبايل، أو الاسم بالكامل لمعرفة آخر حالة مسجلة.</p></div>
-    <form data-maintenance-track action="{{ route('maintenance.requests.track') }}" method="POST">@csrf<label><span class="sr-only">بيانات البحث عن الطلب</span><input name="query" required minlength="3" type="search" placeholder="مثال: BM-2026-123456 أو 01xxxxxxxxx"><button class="btn btn-primary" type="submit">استعلام عن الطلب</button></label></form>
-    <div class="tracking-results" data-tracking-results aria-live="polite"></div>
-</section>
+<div class="tracking-modal" data-tracking-modal aria-hidden="true">
+    <button class="tracking-modal-backdrop" type="button" data-close-tracking aria-label="إغلاق نتيجة الاستعلام"></button>
+    <section class="tracking-modal-card" role="dialog" aria-modal="true" aria-labelledby="tracking-modal-title">
+        <header><span><small>متابعة طلب الصيانة</small><strong id="tracking-modal-title">حالة طلبك</strong></span><button type="button" data-close-tracking aria-label="إغلاق">×</button></header>
+        <div class="tracking-results" data-tracking-results aria-live="polite"></div>
+        <footer><span><i></i> البيانات محدثة من نظام BashaMob</span><button type="button" class="btn btn-glass" data-close-tracking>إغلاق</button></footer>
+    </section>
+</div>
 <div class="request-launch" data-request-launch aria-hidden="true">
     <div class="delivery-cinema" aria-hidden="true">
         <div class="delivery-hud"><span><x-brand-symbol/><b>BashaMob Express</b></span><div class="delivery-progress"><i></i></div><small>استلام <b>•</b> تحميل <b>•</b> توصيل</small></div>

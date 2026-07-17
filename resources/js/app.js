@@ -275,6 +275,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const launch = document.querySelector('[data-request-launch]');
             const launchNumber = launch?.querySelector('[data-launch-number]');
             if (launchNumber) launchNumber.textContent = payload.request_number;
+            launch?.classList.remove('is-active');
+            if (launch) void launch.offsetWidth;
             launch?.classList.add('is-active');
             launch?.setAttribute('aria-hidden', 'false');
             const deliveryStatus = launch?.querySelector('[data-delivery-status]');
@@ -304,6 +306,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    const trackingModal = document.querySelector('[data-tracking-modal]');
+    const closeTrackingModal = () => {
+        trackingModal?.classList.remove('is-open');
+        trackingModal?.setAttribute('aria-hidden', 'true');
+    };
+    document.querySelectorAll('[data-close-tracking]').forEach(button => button.addEventListener('click', closeTrackingModal));
+    document.addEventListener('keydown', event => { if (event.key === 'Escape') closeTrackingModal(); });
+
     document.querySelector('[data-maintenance-track]')?.addEventListener('submit', async event => {
         event.preventDefault();
         const form = event.currentTarget;
@@ -311,6 +321,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const button = form.querySelector('button[type="submit"]');
         const results = document.querySelector('[data-tracking-results]');
         button.disabled = true;
+        trackingModal?.classList.add('is-open');
+        trackingModal?.setAttribute('aria-hidden', 'false');
         if (results) results.innerHTML = '<p class="tracking-loading">جاري البحث عن طلبك...</p>';
         try {
             const response = await fetch(form.action, { method: 'POST', headers: { Accept: 'application/json', 'X-CSRF-TOKEN': form.elements._token.value }, body: new FormData(form) });

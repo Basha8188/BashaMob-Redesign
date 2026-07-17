@@ -20,6 +20,16 @@ class ApplicationRoutesTest extends TestCase
         $this->get(route('customer.device-request'))->assertRedirect(route('maintenance'));
     }
 
+    public function test_maintenance_tracking_is_at_the_top_and_uses_an_overlay_result(): void
+    {
+        $this->get(route('maintenance'))
+            ->assertOk()
+            ->assertSeeInOrder(['maintenance-tracking-top', 'inner-hero'], false)
+            ->assertSee('data-tracking-modal', false)
+            ->assertSee('data-tracking-results', false)
+            ->assertSee('data-request-launch', false);
+    }
+
     public function test_every_admin_module_is_available_to_authenticated_staff(): void
     {
         $this->seed(RolePermissionSeeder::class);
