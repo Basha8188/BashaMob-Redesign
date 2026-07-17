@@ -235,27 +235,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }));
     productSearch?.addEventListener('input', filterProducts);
 
-    const homeSearchForm = document.querySelector('[data-home-search]');
-    const homeSearchInput = homeSearchForm?.querySelector('input');
-    homeSearchForm?.addEventListener('submit', event => {
-        event.preventDefault();
-        const query = normalizeProductText(homeSearchInput?.value || '');
-        const destinations = [
-            { terms: ['صيانة', 'تصليح', 'جهاز', 'طلب'], path: '/maintenance' },
-            { terms: ['كمبيوتر', 'لابتوب', 'لاب توب'], path: '/computers' },
-            { terms: ['موبايل', 'هاتف', 'اكسسوار', 'متجر', 'سعر', 'عرض'], path: '/shop' }
-        ];
-        const destination = destinations.find(item => item.terms.some(term => query.includes(normalizeProductText(term))));
-        if (destination) window.location.assign(destination.path);
-        else showStorefrontToast(query ? 'اكتب اسم قسم مثل: موبايل، كمبيوتر أو صيانة' : 'اكتب ما تريد البحث عنه');
-    });
-    document.addEventListener('keydown', event => {
-        if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k' && homeSearchInput) {
-            event.preventDefault();
-            homeSearchInput.focus();
-        }
-    });
-
     document.addEventListener('click', event => {
         const addButton = event.target.closest('[data-add-product]');
         if (!addButton) return;

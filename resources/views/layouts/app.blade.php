@@ -9,7 +9,7 @@
     <script>document.documentElement.dataset.theme=localStorage.getItem('basha-theme')||'light';document.documentElement.dataset.palette=localStorage.getItem('basha-palette')||'ocean';</script>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="storefront-body @yield('body-class')">
+<body class="storefront-body">
     <div class="aurora" aria-hidden="true"><span></span><span></span><span></span></div>
     <div class="storefront-device-rain" aria-hidden="true">
         @for($device = 1; $device <= 15; $device++)
