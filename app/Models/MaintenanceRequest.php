@@ -19,4 +19,9 @@ class MaintenanceRequest extends Model
         'problem',
         'status',
     ];
+
+    public function customer()
+    {
+        return $this->belongsTo(Customer::class, 'phone', 'phone');
+    }
 }

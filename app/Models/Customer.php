@@ -30,4 +30,14 @@ class Customer extends Model
     {
         return $this->hasMany(RepairTicket::class);
     }
+
+    public function maintenanceRequests()
+    {
+        return $this->hasMany(MaintenanceRequest::class, 'phone', 'phone');
+    }
+
+    public function orders()
+    {
+        return $this->hasMany(CustomerOrder::class);
+    }
 }

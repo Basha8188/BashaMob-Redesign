@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Jobs\SendMaintenanceRequestConfirmation;
+use App\Models\Customer;
 use App\Models\MaintenanceRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class MaintenanceRequestController extends Controller
 {
@@ -51,11 +53,21 @@ class MaintenanceRequestController extends Controller
             'problem' => ['required', 'string', 'max:3000'],
         ]);
 
-        $maintenanceRequest = MaintenanceRequest::create([
-            ...$validated,
-            'request_number' => $this->nextRequestNumber(),
-            'status' => 'pending_review',
-        ]);
+        $maintenanceRequest = DB::transaction(function () use ($validated) {
+            $customer = Customer::withTrashed()->firstOrNew(['phone' => $validated['phone']]);
+            $customer->fill([
+                'name' => $validated['name'],
+                'email' => $validated['email'],
+                'is_active' => true,
+                'deleted_at' => null,
+            ])->save();
+
+            return MaintenanceRequest::create([
+                ...$validated,
+                'request_number' => $this->nextRequestNumber(),
+                'status' => 'pending_review',
+            ]);
+        });
 
         SendMaintenanceRequestConfirmation::dispatch($maintenanceRequest->id);
 

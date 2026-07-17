@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Jobs\SendMaintenanceRequestConfirmation;
+use App\Models\Customer;
 use App\Models\MaintenanceRequest;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
@@ -32,6 +33,8 @@ class MaintenanceRequestTest extends TestCase
         $request = MaintenanceRequest::firstOrFail();
         $this->assertSame('pending_review', $request->status);
         $this->assertSame('ahmed@example.com', $request->email);
+        $this->assertDatabaseHas('customers', ['phone' => '01012345678', 'email' => 'ahmed@example.com']);
+        $this->assertSame(1, Customer::firstOrFail()->maintenanceRequests()->count());
         Queue::assertPushed(SendMaintenanceRequestConfirmation::class, fn ($job) => $job->requestId === $request->id);
     }
 

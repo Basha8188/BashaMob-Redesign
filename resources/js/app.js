@@ -241,17 +241,87 @@ document.addEventListener('DOMContentLoaded', () => {
     }));
     productSearch?.addEventListener('input', filterProducts);
 
+    const cartKey = 'basha-customer-cart';
+    const readCart = () => {
+        try { return JSON.parse(localStorage.getItem(cartKey) || '[]'); }
+        catch { return []; }
+    };
+    const writeCart = cart => {
+        localStorage.setItem(cartKey, JSON.stringify(cart));
+        document.querySelectorAll('[data-cart-count]').forEach(badge => { badge.textContent = String(cart.length); });
+    };
+    const orderModal = document.querySelector('[data-order-modal]');
+    const cartItems = document.querySelector('[data-cart-items]');
+    const renderCart = () => {
+        const cart = readCart();
+        writeCart(cart);
+        if (!cartItems) return;
+        if (!cart.length) {
+            cartItems.innerHTML = '<p class="customer-cart-empty">لم تضف منتجات إلى طلبك بعد.</p>';
+            return;
+        }
+        cartItems.replaceChildren(...cart.map((item, index) => {
+            const row = document.createElement('article');
+            const details = document.createElement('span');
+            const name = document.createElement('b'); name.textContent = item.name;
+            const price = document.createElement('small'); price.textContent = `${Number(item.price || 0).toLocaleString('ar-EG')} ج.م`;
+            const remove = document.createElement('button'); remove.type = 'button'; remove.dataset.cartRemove = String(index); remove.textContent = '×'; remove.setAttribute('aria-label', 'حذف المنتج');
+            details.append(name, price); row.append(details, remove);
+            return row;
+        }));
+    };
+    const closeOrderModal = () => {
+        orderModal?.classList.remove('is-open');
+        orderModal?.setAttribute('aria-hidden', 'true');
+    };
+    document.querySelectorAll('[data-cart-open]').forEach(button => button.addEventListener('click', () => {
+        renderCart(); orderModal?.classList.add('is-open'); orderModal?.setAttribute('aria-hidden', 'false');
+    }));
+    document.querySelectorAll('[data-cart-close]').forEach(button => button.addEventListener('click', closeOrderModal));
+    renderCart();
+
     document.addEventListener('click', event => {
         const addButton = event.target.closest('[data-add-product]');
+        const removeButton = event.target.closest('[data-cart-remove]');
+        if (removeButton) {
+            const cart = readCart(); cart.splice(Number(removeButton.dataset.cartRemove), 1); writeCart(cart); renderCart(); return;
+        }
         if (!addButton) return;
         const card = addButton.closest('[data-product-card]');
         const name = card?.querySelector('h3')?.textContent.trim() || 'المنتج';
-        const cart = JSON.parse(localStorage.getItem('basha-customer-cart') || '[]');
-        cart.push({ name, addedAt: new Date().toISOString() });
-        localStorage.setItem('basha-customer-cart', JSON.stringify(cart));
+        const cart = readCart();
+        cart.push({ name, price: Number(card?.dataset.productPrice || 0), addedAt: new Date().toISOString() });
+        writeCart(cart);
         addButton.textContent = '✓';
         addButton.classList.add('is-added');
-        showStorefrontToast(`تمت إضافة ${name} إلى اختياراتك`);
+        showStorefrontToast(`تمت إضافة ${name} إلى طلبك`);
+    });
+
+    document.querySelector('[data-customer-order]')?.addEventListener('submit', async event => {
+        event.preventDefault();
+        const form = event.currentTarget;
+        const result = form.querySelector('[data-order-result]');
+        const button = form.querySelector('button[type="submit"]');
+        const cart = readCart();
+        if (!cart.length) { if (result) result.textContent = 'أضف منتجًا واحدًا على الأقل.'; return; }
+        button.disabled = true;
+        if (result) result.textContent = 'جاري تسجيل طلبك...';
+        try {
+            const response = await fetch(form.action, {
+                method: 'POST',
+                headers: { Accept: 'application/json', 'Content-Type': 'application/json', 'X-CSRF-TOKEN': form.elements._token.value },
+                body: JSON.stringify({ name: form.elements.name.value, phone: form.elements.phone.value, email: form.elements.email.value, items: cart.map(({ name, price }) => ({ name, price })) })
+            });
+            const payload = await response.json().catch(() => ({}));
+            if (!response.ok) throw new Error(Object.values(payload.errors || {}).flat()[0] || payload.message || 'تعذر تسجيل طلب الشراء.');
+            writeCart([]); form.reset(); renderCart();
+            localStorage.setItem(requestCountKey, String(readRequestCount() + 1));
+            if (result) result.textContent = `تم تسجيل طلبك برقم ${payload.order_number}`;
+            showStorefrontToast(`تم إرسال طلب الشراء ${payload.order_number} إلى BashaMob`);
+            window.setTimeout(closeOrderModal, 2200);
+        } catch (error) {
+            if (result) result.textContent = error.message;
+        } finally { button.disabled = false; }
     });
 
     document.querySelector('[data-quick-maintenance]')?.addEventListener('submit', async event => {

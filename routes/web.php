@@ -19,6 +19,7 @@ use App\Http\Controllers\Admin\SupplierController;
 use App\Http\Controllers\Admin\WarehouseController;
 use App\Http\Controllers\Auth\StaffRecoveryController;
 use App\Http\Controllers\Auth\StaffSessionController;
+use App\Http\Controllers\CustomerOrderController;
 use App\Http\Controllers\MaintenanceRequestController;
 use Illuminate\Support\Facades\Route;
 
@@ -27,6 +28,7 @@ Route::view('/shop', 'pages.shop')->name('shop');
 Route::view('/maintenance', 'pages.maintenance')->name('maintenance');
 Route::post('/maintenance/requests', [MaintenanceRequestController::class, 'store'])->middleware('throttle:5,1')->name('maintenance.requests.store');
 Route::post('/maintenance/track', [MaintenanceRequestController::class, 'track'])->middleware('throttle:10,1')->name('maintenance.requests.track');
+Route::post('/shop/orders', [CustomerOrderController::class, 'store'])->middleware('throttle:8,1')->name('customer.orders.store');
 Route::view('/computers', 'pages.computers')->name('computers');
 Route::redirect('/customer/device-request', '/maintenance')->name('customer.device-request');
 
