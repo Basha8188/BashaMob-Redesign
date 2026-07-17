@@ -2,10 +2,13 @@
 
 namespace Tests\Feature;
 
+use App\Models\Product;
 use App\Models\User;
 use App\Models\Warehouse;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class AdminCrudTest extends TestCase
@@ -26,12 +29,27 @@ class AdminCrudTest extends TestCase
 
     public function test_product_button_creates_real_product_and_stock(): void
     {
-        $this->postJson('/admin/products', ['sku' => 'IPH-16', 'name' => 'iPhone 16', 'brand' => 'Apple', 'price' => 62900, 'quantity' => 3])
-            ->assertCreated()->assertJsonPath('row.cells.0', 'IPH-16');
+        Storage::fake('public');
 
-        $this->assertDatabaseHas('products', ['sku' => 'IPH-16', 'name' => 'iPhone 16']);
+        $png = base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=', true);
+        $response = $this->post('/admin/products', ['sku' => 'IPH-16', 'barcode' => '', 'name' => 'iPhone 16', 'brand' => 'Apple', 'price' => 62900, 'quantity' => 3, 'image' => UploadedFile::fake()->createWithContent('iphone.png', $png)], ['Accept' => 'application/json']);
+        $response->assertCreated()->assertJsonPath('row.cells.0', 'IPH-16');
+
+        $product = Product::where('sku', 'IPH-16')->firstOrFail();
+        $this->assertMatchesRegularExpression('/^\d{13}$/', $product->barcode);
+        $this->assertSame($product->barcode, $response->json('row.cells.1'));
+        $this->assertNotNull($product->image_path);
+        Storage::disk('public')->assertExists($product->image_path);
         $this->assertDatabaseHas('warehouse_stocks', ['quantity' => 3]);
         $this->assertDatabaseHas('activity_logs', ['action' => 'product.created']);
+    }
+
+    public function test_product_barcode_is_unique_and_can_be_supplied_manually(): void
+    {
+        $payload = ['sku' => 'CABLE-1', 'barcode' => '6221234567895', 'name' => 'USB Cable', 'price' => 250, 'quantity' => 2];
+
+        $this->postJson('/admin/products', $payload)->assertCreated();
+        $this->postJson('/admin/products', [...$payload, 'sku' => 'CABLE-2'])->assertUnprocessable()->assertJsonValidationErrors('barcode');
     }
 
     public function test_employee_name_edit_is_persisted_in_database(): void

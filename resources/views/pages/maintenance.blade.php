@@ -26,11 +26,21 @@
     <div class="tracking-results" data-tracking-results aria-live="polite"></div>
 </section>
 <div class="request-launch" data-request-launch aria-hidden="true">
-    <div class="launch-sky">
-        <span class="launch-order">طلبك <b data-launch-number></b></span>
-        <span class="launch-rocket"><i></i><svg viewBox="0 0 64 64" aria-hidden="true"><path d="M37 7c9 2 16 9 18 18L38 42 22 26 37 7Z"/><path d="m23 27-10 3-5 9 17-2m12 2-3 11-9 5 2-17"/><circle cx="40" cy="22" r="5"/><path class="rocket-flame" d="m18 40-8 11 12-7"/></svg></span>
-        <span class="launch-destination"><x-brand-symbol/> <b>BashaMob</b></span>
+    <div class="delivery-scene" aria-hidden="true">
+        <div class="delivery-stars"></div>
+        <span class="dispatch-lamp"><i></i><b></b></span>
+        <span class="dispatch-worker">
+            <svg viewBox="0 0 86 110"><circle cx="45" cy="19" r="12"/><path d="M34 34h23l7 35H27l7-35Z"/><path class="worker-arm" d="M57 40c14 4 18 11 22 19"/><path d="m34 68-9 34m31-34 10 34"/></svg>
+        </span>
+        <span class="delivery-ticket"><b>طلب صيانة</b><small data-launch-number></small><i>✓</i></span>
+        <span class="delivery-hub"><x-brand-symbol/><b>BashaMob</b><small>مركز الاستقبال</small></span>
+        <span class="transport-truck">
+            <svg viewBox="0 0 210 100"><path class="truck-box" d="M75 14h112v58H75z"/><path class="truck-cab" d="M18 38h57v34H8V54l10-16Z"/><path class="truck-window" d="M25 43h25l13 20H20l5-20Z"/><path class="truck-line" d="M88 31h83M99 47h62"/><circle cx="48" cy="77" r="14"/><circle cx="161" cy="77" r="14"/><circle class="wheel-core" cx="48" cy="77" r="5"/><circle class="wheel-core" cx="161" cy="77" r="5"/></svg>
+            <b>BashaMob</b><i></i>
+        </span>
+        <span class="delivery-road"><i></i></span>
+        <span class="delivery-arrived">✓<b>وصل الطلب</b></span>
     </div>
-    <strong>الصاروخ استلم طلبك ووصّله لنا!</strong><small>سرعة في الاستلام… ودقة في المتابعة</small>
+    <strong data-delivery-status aria-live="polite">بنفتح خط الاستقبال لطلبك...</strong><small>استلام سريع، نقل آمن، ومتابعة دقيقة من BashaMob</small>
 </div>
 @endsection

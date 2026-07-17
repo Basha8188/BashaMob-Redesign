@@ -5,7 +5,7 @@ const sharedStatus = [option('نشط', 'Active'), option('موقوف', 'Suspende
 const schemas = {
     products: {
         ar: 'منتج', en: 'Product', description: option('أدخل بيانات المنتج والسعر والكمية المتاحة.', 'Enter the product, price and available quantity.'),
-        fields: [field('sku','كود المنتج / SKU','Product code / SKU'), field('name','اسم المنتج','Product name'), field('brand','الماركة','Brand'), field('price','سعر البيع','Sale price','text',{ inputmode:'decimal' }), field('quantity','الكمية','Quantity','number',{ min:'0' })]
+        fields: [field('sku','كود المنتج / SKU','Product code / SKU'), field('barcode','الباركود (اتركه فارغًا للتوليد التلقائي)','Barcode (leave blank to auto-generate)','text',{ required:false,inputmode:'numeric',minlength:'13',maxlength:'13',pattern:'[0-9]{13}' }), field('name','اسم المنتج','Product name'), field('brand','الماركة','Brand'), field('price','سعر البيع','Sale price','text',{ inputmode:'decimal' }), field('quantity','الكمية','Quantity','number',{ min:'0' }), field('image','صورة المنتج','Product image','file',{ required:false,table:false,wide:true,accept:'image/jpeg,image/png,image/webp' })]
     },
     sales: {
         ar: 'فاتورة بيع', en: 'Sales invoice', description: option('أنشئ فاتورة بيع واربطها بالعميل وحالة السداد.', 'Create a sales invoice and set its customer and payment status.'),
@@ -67,12 +67,32 @@ document.addEventListener('DOMContentLoaded', () => {
     const dataCells = row => [...row.children].filter(cell => !cell.querySelector('.row-actions'));
     const tableBody = () => document.querySelector('.admin-table tbody');
     const storageKey = () => `bashamob-admin-records:${module}`;
-    const buildRow = (values, id = '') => {
+    const setProductNameCell = (cell, value, imageUrl = '') => {
+        const content = document.createElement('span');
+        content.className = 'product-table-name';
+        if (imageUrl) {
+            const image = document.createElement('img');
+            image.src = imageUrl;
+            image.alt = '';
+            content.append(image);
+        } else {
+            const placeholder = document.createElement('span');
+            placeholder.className = 'product-image-placeholder';
+            placeholder.textContent = '▣';
+            content.append(placeholder);
+        }
+        const name = document.createElement('b');
+        name.textContent = value;
+        content.append(name);
+        cell.replaceChildren(content);
+    };
+    const buildRow = (values, id = '', imageUrl = '') => {
         const row = document.createElement('tr');
         if (id) row.dataset.recordId = String(id);
         values.forEach((value, index) => {
             const cell = document.createElement('td');
-            cell.textContent = value;
+            if (module === 'products' && index === 2) setProductNameCell(cell, value, imageUrl);
+            else cell.textContent = value;
             if (index === values.length - 1) cell.className = 'status-cell';
             row.append(cell);
         });
@@ -86,6 +106,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     const persistRows = () => {};
     const fieldValue = (descriptor) => {
+        if (descriptor.type === 'file') return form.elements[descriptor.name]?.files?.[0] || null;
         if (descriptor.type === 'permissions') {
             const checked = [...form.querySelectorAll(`[name="${descriptor.name}"]:checked`)];
             return checked.map(input => input.value).join(isArabic() ? '، ' : ', ');
@@ -136,11 +157,17 @@ document.addEventListener('DOMContentLoaded', () => {
         const input = document.createElement('input');
         input.type = descriptor.type;
         input.name = descriptor.name;
-        input.value = descriptor.type === 'date' ? normalizeDate(value) : value;
+        if (descriptor.type !== 'file') input.value = descriptor.type === 'date' ? normalizeDate(value) : value;
         input.required = descriptor.required !== false;
         input.placeholder = isArabic() ? `أدخل ${descriptor.ar}` : `Enter ${descriptor.en.toLowerCase()}`;
-        ['inputmode','min','max'].forEach(attribute => { if (descriptor[attribute] !== undefined) input.setAttribute(attribute, descriptor[attribute]); });
+        ['inputmode','min','max','minlength','maxlength','pattern','accept'].forEach(attribute => { if (descriptor[attribute] !== undefined) input.setAttribute(attribute, descriptor[attribute]); });
         wrapper.append(input);
+        if (descriptor.type === 'file') {
+            const hint = document.createElement('small');
+            hint.className = 'crud-file-hint';
+            hint.textContent = isArabic() ? 'JPG أو PNG أو WebP — بحد أقصى 4 ميجابايت' : 'JPG, PNG or WebP — max 4 MB';
+            wrapper.append(hint);
+        }
         return wrapper;
     };
 
@@ -222,22 +249,44 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (serverModules.has(module)) {
             const button = form.querySelector('button[type="submit"]');
-            const payloadData = Object.fromEntries(schema.fields.map((field, index) => [field.name, values[index]]));
             const recordId = editingRow?.dataset.recordId;
+            const hasFile = schema.fields.some(field => field.type === 'file');
+            let requestBody;
+            const headers = { 'Accept':'application/json', 'X-CSRF-TOKEN':csrfToken };
+            let requestMethod = recordId ? 'PATCH' : 'POST';
+            if (hasFile) {
+                requestBody = new FormData();
+                schema.fields.forEach((field, index) => {
+                    const value = values[index];
+                    if (value instanceof File) requestBody.append(field.name, value);
+                    else if (value !== null && value !== undefined) requestBody.append(field.name, value);
+                });
+                if (recordId) {
+                    requestBody.append('_method', 'PATCH');
+                    requestMethod = 'POST';
+                }
+            } else {
+                headers['Content-Type'] = 'application/json';
+                requestBody = JSON.stringify(Object.fromEntries(schema.fields.map((field, index) => [field.name, values[index]])));
+            }
             button.disabled = true;
             try {
                 const response = await fetch(`/admin/${module}${recordId ? `/${recordId}` : ''}`, {
-                    method: recordId ? 'PATCH' : 'POST',
-                    headers: { 'Accept':'application/json', 'Content-Type':'application/json', 'X-CSRF-TOKEN':csrfToken },
-                    body: JSON.stringify(payloadData)
+                    method: requestMethod,
+                    headers,
+                    body: requestBody
                 });
                 const payload = await response.json().catch(() => ({ message:'تعذر حفظ البيانات.' }));
                 if (!response.ok) throw new Error(payload.message || Object.values(payload.errors || {})[0]?.[0] || 'تعذر حفظ البيانات.');
                 const saved = payload.row;
                 if (editingRow) {
                     editingRow.dataset.recordId = String(saved.id);
-                    dataCells(editingRow).forEach((cell, index) => cell.replaceChildren(document.createTextNode(saved.cells[index] ?? '')));
-                } else if (tableBody()) tableBody().prepend(buildRow(saved.cells, saved.id));
+                    dataCells(editingRow).forEach((cell, index) => {
+                        const value = saved.cells[index] ?? '';
+                        if (module === 'products' && index === 2) setProductNameCell(cell, value, saved.image_url);
+                        else cell.replaceChildren(document.createTextNode(value));
+                    });
+                } else if (tableBody()) tableBody().prepend(buildRow(saved.cells, saved.id, saved.image_url));
                 else window.setTimeout(() => window.location.reload(), 500);
                 close(); notify(payload.message);
             } catch (error) { notify(error.message); }

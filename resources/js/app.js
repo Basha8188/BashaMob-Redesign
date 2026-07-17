@@ -271,13 +271,24 @@ document.addEventListener('DOMContentLoaded', () => {
             if (launchNumber) launchNumber.textContent = payload.request_number;
             launch?.classList.add('is-active');
             launch?.setAttribute('aria-hidden', 'false');
+            const deliveryStatus = launch?.querySelector('[data-delivery-status]');
+            const deliveryStages = [
+                [0, 'بنفتح خط الاستقبال لطلبك...'],
+                [1100, 'موظف الاستقبال استلم بيانات الطلب'],
+                [2500, 'طلبك اتحمّل في عربية BashaMob'],
+                [4100, 'العربية في الطريق لمركز الصيانة'],
+                [5500, 'وصل طلبك عندنا بأمان ✓']
+            ];
+            deliveryStages.forEach(([delay, message]) => window.setTimeout(() => {
+                if (deliveryStatus) deliveryStatus.textContent = message;
+            }, delay));
             if (result) result.textContent = `تم استلام الطلب. رقم المتابعة: ${payload.request_number}`;
             window.setTimeout(() => {
                 launch?.classList.remove('is-active');
                 launch?.setAttribute('aria-hidden', 'true');
                 showStorefrontToast(`تم تسجيل الطلب ${payload.request_number} وهو قيد المراجعة`);
                 button.disabled = false;
-            }, 2600);
+            }, 6200);
             form.reset();
         } catch (error) {
             if (result) result.textContent = error.message;
