@@ -25,4 +25,22 @@ class ProductRequest extends FormRequest
             'image' => ['nullable', File::image()->types(['jpg', 'jpeg', 'png', 'webp'])->max(4 * 1024)],
         ];
     }
+
+    public function messages(): array
+    {
+        return [
+            'sku.required' => 'اكتب كودًا للمنتج.',
+            'sku.unique' => 'كود المنتج مستخدم بالفعل. استخدم كودًا مختلفًا.',
+            'barcode.digits' => 'الباركود يجب أن يتكون من 13 رقمًا، أو اتركه فارغًا للتوليد التلقائي.',
+            'barcode.unique' => 'الباركود مستخدم بالفعل لمنتج آخر.',
+            'name.required' => 'اكتب اسم المنتج.',
+            'price.required' => 'اكتب سعر البيع.',
+            'price.numeric' => 'سعر البيع يجب أن يكون رقمًا صحيحًا.',
+            'quantity.required' => 'اكتب الكمية المتاحة.',
+            'quantity.numeric' => 'الكمية يجب أن تكون رقمًا صحيحًا.',
+            'image.image' => 'الملف المرفوع يجب أن يكون صورة.',
+            'image.mimes' => 'صيغة الصورة يجب أن تكون JPG أو PNG أو WebP.',
+            'image.max' => 'حجم الصورة يجب ألا يتجاوز 4 ميجابايت.',
+        ];
+    }
 }

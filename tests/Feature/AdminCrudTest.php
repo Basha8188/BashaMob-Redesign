@@ -49,7 +49,15 @@ class AdminCrudTest extends TestCase
         $payload = ['sku' => 'CABLE-1', 'barcode' => '6221234567895', 'name' => 'USB Cable', 'price' => 250, 'quantity' => 2];
 
         $this->postJson('/admin/products', $payload)->assertCreated();
-        $this->postJson('/admin/products', [...$payload, 'sku' => 'CABLE-2'])->assertUnprocessable()->assertJsonValidationErrors('barcode');
+        $this->postJson('/admin/products', [...$payload, 'sku' => 'CABLE-2'])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('barcode')
+            ->assertJsonPath('errors.barcode.0', 'الباركود مستخدم بالفعل لمنتج آخر.');
+
+        $this->postJson('/admin/products', [...$payload, 'barcode' => '6221234567896'])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('sku')
+            ->assertJsonPath('errors.sku.0', 'كود المنتج مستخدم بالفعل. استخدم كودًا مختلفًا.');
     }
 
     public function test_employee_name_edit_is_persisted_in_database(): void

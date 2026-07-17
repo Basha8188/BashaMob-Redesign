@@ -276,8 +276,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     headers,
                     body: requestBody
                 });
-                const payload = await response.json().catch(() => ({ message:'تعذر حفظ البيانات.' }));
-                if (!response.ok) throw new Error(payload.message || Object.values(payload.errors || {})[0]?.[0] || 'تعذر حفظ البيانات.');
+                const payload = await response.json().catch(() => ({}));
+                if (!response.ok) {
+                    const validationMessage = Object.values(payload.errors || {}).flat()[0];
+                    const statusMessage = response.status === 419
+                        ? (isArabic() ? 'انتهت الجلسة. حدّث الصفحة ثم حاول مرة أخرى.' : 'Session expired. Refresh the page and try again.')
+                        : response.status === 413
+                            ? (isArabic() ? 'حجم الملف أكبر من الحد المسموح.' : 'The uploaded file is too large.')
+                            : (isArabic() ? 'تعذر حفظ البيانات. حاول مرة أخرى.' : 'Could not save the data. Try again.');
+                    throw new Error(validationMessage || payload.message || statusMessage);
+                }
                 const saved = payload.row;
                 if (editingRow) {
                     editingRow.dataset.recordId = String(saved.id);
