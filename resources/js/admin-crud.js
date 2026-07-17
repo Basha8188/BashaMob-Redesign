@@ -51,7 +51,7 @@ const schemas = {
 
 const isArabic = () => document.documentElement.lang !== 'en';
 const text = value => isArabic() ? value.ar : value.en;
-const notify = message => document.dispatchEvent(new CustomEvent('admin:toast', { detail: message }));
+const notify = (message, options = {}) => document.dispatchEvent(new CustomEvent('admin:toast', { detail: { message, ...options } }));
 
 document.addEventListener('DOMContentLoaded', () => {
     const modal = document.getElementById('crud-modal');
@@ -288,7 +288,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     });
                 } else if (tableBody()) tableBody().prepend(buildRow(saved.cells, saved.id, saved.image_url));
                 else window.setTimeout(() => window.location.reload(), 500);
-                close(); notify(payload.message);
+                const repairIsCompleted = module === 'repairs' && /ready_for_delivery|delivered|ready for pickup|تم التسليم|جاهز للاستلام/i.test(String(saved.cells.at(-1) || ''));
+                const printable = module === 'sales' || repairIsCompleted;
+                close();
+                notify(payload.message, printable ? {
+                    printable: true,
+                    action: module === 'sales' ? (isArabic() ? 'فاتورة بيع' : 'Sales invoice') : (isArabic() ? 'إيصال صيانة' : 'Repair receipt'),
+                    number: saved.cells[0],
+                    amount: module === 'sales' ? saved.cells[3] : ''
+                } : {});
             } catch (error) { notify(error.message); }
             finally { button.disabled = false; }
             return;

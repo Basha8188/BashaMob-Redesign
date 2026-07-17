@@ -33,7 +33,7 @@
         <form id="crud-form"><div class="crud-fields" id="crud-fields"></div><button class="btn btn-primary" id="crud-submit" type="submit">حفظ البيانات</button></form>
     </section>
 </div>
-<div class="admin-toast glass-panel" id="admin-toast"><span>تم حفظ البيانات بنجاح</span><button type="button" id="print-receipt">طباعة إيصال</button></div>
+<div class="admin-toast glass-panel" id="admin-toast"><span>تم حفظ البيانات بنجاح</span><button type="button" id="print-receipt" hidden>طباعة إيصال</button></div>
 <article class="print-receipt" id="receipt-print-area">
     <header><b>BashaMob</b><span>إيصال إجراء</span></header>
     <div><span>رقم الإيصال</span><strong id="receipt-number">—</strong></div>

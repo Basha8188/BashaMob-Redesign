@@ -78,15 +78,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const receiptDate = document.getElementById('receipt-date');
     const receiptNumber = document.getElementById('receipt-number');
     const receiptAmount = document.getElementById('receipt-amount');
+    const printReceiptButton = document.getElementById('print-receipt');
 
-    const showToast = (message = 'تم حفظ البيانات بنجاح') => {
+    const showToast = (detail = 'تم حفظ البيانات بنجاح') => {
         if (!toast) return;
+        const options = typeof detail === 'object' && detail !== null ? detail : { message: detail };
+        const message = options.message || 'تم حفظ البيانات بنجاح';
         const toastMessage = toast.querySelector('span');
         if (toastMessage) toastMessage.textContent = message;
-        if (receiptAction) receiptAction.textContent = message;
-        if (receiptDate) receiptDate.textContent = new Intl.DateTimeFormat('ar-EG', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date());
-        if (receiptNumber) receiptNumber.textContent = `RCP-${new Date().getFullYear()}-${String(Date.now()).slice(-6)}`;
-        if (receiptAmount) receiptAmount.textContent = '—';
+        if (printReceiptButton) printReceiptButton.hidden = !options.printable;
+        if (options.printable) {
+            if (receiptAction) receiptAction.textContent = options.action || message;
+            if (receiptDate) receiptDate.textContent = new Intl.DateTimeFormat('ar-EG', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date());
+            if (receiptNumber) receiptNumber.textContent = options.number || `RCP-${new Date().getFullYear()}-${String(Date.now()).slice(-6)}`;
+            if (receiptAmount) receiptAmount.textContent = options.amount ? `${options.amount} ج.م` : '—';
+        }
         toast.classList.add('show');
         window.setTimeout(() => toast.classList.remove('show'), 7000);
     };
