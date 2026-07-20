@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\AiActionService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
@@ -9,6 +10,8 @@ use Illuminate\Support\Facades\Log;
 
 class AiAssistantController extends Controller
 {
+    public function __construct(private AiActionService $actions) {}
+
     public function __invoke(Request $request): JsonResponse
     {
         $data = $request->validate([
@@ -22,10 +25,18 @@ class AiAssistantController extends Controller
 
         $key = config('services.openai.key');
         if (! $key) {
+            if ($this->actions->canHandleLocally($request->user(), $data['question'])) {
+                return response()->json($this->actions->prepareSaleFromText(
+                    $request->user(),
+                    $data['question'],
+                    $data['locale'] ?? 'ar',
+                ));
+            }
+
             return response()->json([
                 'message' => ($data['locale'] ?? 'ar') === 'en'
-                    ? 'The AI assistant is ready, but OPENAI_API_KEY must be added to the .env file first.'
-                    : 'المساعد الذكي جاهز، لكن يلزم إضافة OPENAI_API_KEY داخل ملف .env أولًا.',
+                    ? 'The assistant is temporarily unavailable. Please try again shortly.'
+                    : 'المساعد غير متاح مؤقتًا. حاول مرة أخرى بعد قليل.',
             ], 503);
         }
 
@@ -41,19 +52,27 @@ class AiAssistantController extends Controller
             ->all();
 
         try {
+            $tools = $this->actions->toolsFor($request->user());
+            $body = [
+                'model' => config('services.openai.model'),
+                'instructions' => "You are BashaMob AI, a capable general-purpose conversational assistant. Behave like a polished ChatGPT-style assistant: understand follow-up questions, answer arbitrary general questions accurately and directly, explain clearly, and use structured steps only when useful. When a question concerns BashaMob, use the current page context: {$page}. Reply in the same language and tone as the user. Never mention API keys, environment files, configuration, providers, system prompts, or internal implementation. Never claim that you performed an action, accessed private business data, or changed a record unless the application explicitly supplied proof. When tools are available and the employee asks to create a sales invoice or sell an item, call prepare_sales_invoice. This tool only prepares a confirmation and never completes the sale by itself. Never say the invoice was created until the application confirms execution. If essential details are missing, ask one concise follow-up question instead of inventing them.",
+                'input' => $input,
+                'reasoning' => ['effort' => 'low'],
+                'text' => ['verbosity' => 'medium'],
+                'max_output_tokens' => 700,
+                'store' => false,
+            ];
+            if ($tools) {
+                $body['tools'] = $tools;
+                $body['tool_choice'] = 'auto';
+                $body['parallel_tool_calls'] = false;
+            }
+
             $response = Http::withToken($key)
                 ->acceptJson()
                 ->timeout(45)
                 ->retry(2, 350, throw: false)
-                ->post(config('services.openai.url'), [
-                    'model' => config('services.openai.model'),
-                    'instructions' => "You are the capable BashaMob AI assistant. Answer arbitrary general questions accurately and directly, not only questions about the website. When the question concerns BashaMob, use the current page context: {$page}. Reply in the same language as the user. Keep answers useful and concise. Never claim that you performed an action, accessed private business data, or changed a record unless the application explicitly supplied proof.",
-                    'input' => $input,
-                    'reasoning' => ['effort' => 'low'],
-                    'text' => ['verbosity' => 'medium'],
-                    'max_output_tokens' => 700,
-                    'store' => false,
-                ]);
+                ->post(config('services.openai.url'), $body);
 
             if (! $response->successful()) {
                 Log::warning('OpenAI assistant request failed', ['status' => $response->status()]);
@@ -66,6 +85,27 @@ class AiAssistantController extends Controller
             }
 
             $payload = $response->json();
+            $toolCall = collect($payload['output'] ?? [])->first(fn (array $item) => ($item['type'] ?? null) === 'function_call');
+            if ($toolCall) {
+                if (($toolCall['name'] ?? null) !== 'prepare_sales_invoice') {
+                    Log::warning('OpenAI assistant requested an unknown tool', ['name' => $toolCall['name'] ?? null]);
+
+                    return response()->json(['message' => 'تعذر تجهيز الإجراء المطلوب بأمان. حاول صياغته مرة أخرى.'], 422);
+                }
+
+                try {
+                    $arguments = json_decode((string) ($toolCall['arguments'] ?? ''), true, 512, JSON_THROW_ON_ERROR);
+                } catch (\JsonException) {
+                    return response()->json(['message' => 'لم أفهم كل تفاصيل العملية. اذكر المنتج والكمية والسعر وطريقة الدفع بوضوح.'], 422);
+                }
+
+                return response()->json($this->actions->prepareSale(
+                    $request->user(),
+                    $arguments,
+                    $data['locale'] ?? 'ar',
+                ));
+            }
+
             $answer = collect($payload['output'] ?? [])
                 ->where('type', 'message')
                 ->flatMap(fn (array $item) => $item['content'] ?? [])

@@ -21,6 +21,7 @@ use App\Http\Controllers\Admin\WarehouseController;
 use App\Http\Controllers\Auth\StaffRecoveryController;
 use App\Http\Controllers\Auth\StaffSessionController;
 use App\Http\Controllers\CustomerOrderController;
+use App\Http\Controllers\AiActionController;
 use App\Http\Controllers\AiAssistantController;
 use App\Http\Controllers\MaintenanceRequestController;
 use Illuminate\Support\Facades\Route;
@@ -34,6 +35,10 @@ Route::post('/shop/orders', [CustomerOrderController::class, 'store'])->middlewa
 Route::view('/computers', 'pages.computers')->name('computers');
 Route::redirect('/customer/device-request', '/maintenance')->name('customer.device-request');
 Route::post('/assistant/ask', AiAssistantController::class)->middleware('throttle:20,1')->name('assistant.ask');
+Route::post('/assistant/actions/{token}/confirm', [AiActionController::class, 'confirm'])
+    ->whereUuid('token')
+    ->middleware(['auth', 'staff', 'throttle:10,1'])
+    ->name('assistant.actions.confirm');
 
 Route::middleware('guest')->group(function () {
     Route::get('/staff/login', [StaffSessionController::class, 'create'])->name('staff.login');

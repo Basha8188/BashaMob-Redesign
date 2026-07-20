@@ -11,7 +11,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const messages = assistant.querySelector('[data-ai-messages]');
         const form = assistant.querySelector('[data-ai-form]');
         const submit = form?.querySelector('button[type="submit"]');
-        const history = [];
+        const storageKey = 'basha-ai-conversation';
+        let history = [];
+        try { history = JSON.parse(sessionStorage.getItem(storageKey) || '[]').slice(-8); } catch { history = []; }
         const addBubble = (text, className = '') => {
             const bubble = document.createElement('p');
             bubble.className = className;
@@ -20,6 +22,102 @@ document.addEventListener('DOMContentLoaded', () => {
             messages?.scrollTo({ top: messages.scrollHeight, behavior: 'smooth' });
             return bubble;
         };
+        const saveHistory = () => {
+            if (history.length > 8) history.splice(0, history.length - 8);
+            sessionStorage.setItem(storageKey, JSON.stringify(history));
+        };
+        const renderAction = action => {
+            if (!messages || action?.type !== 'confirmation') return;
+            const card = document.createElement('section');
+            card.className = 'ai-action-card';
+
+            const title = document.createElement('strong');
+            title.textContent = action.title;
+            const details = document.createElement('dl');
+            (action.details || []).forEach(item => {
+                const label = document.createElement('dt');
+                const value = document.createElement('dd');
+                label.textContent = item.label;
+                value.textContent = item.value;
+                details.append(label, value);
+            });
+            card.append(title, details);
+
+            if (action.warning) {
+                const warning = document.createElement('p');
+                warning.className = 'ai-action-warning';
+                warning.textContent = action.warning;
+                card.append(warning);
+            }
+
+            const status = document.createElement('small');
+            status.className = 'ai-action-status';
+            const controls = document.createElement('div');
+            const confirm = document.createElement('button');
+            confirm.type = 'button';
+            confirm.className = 'ai-action-confirm';
+            confirm.textContent = action.confirm_label;
+            const cancel = document.createElement('button');
+            cancel.type = 'button';
+            cancel.className = 'ai-action-cancel';
+            cancel.textContent = action.cancel_label;
+            controls.append(confirm, cancel);
+            card.append(status, controls);
+            messages.append(card);
+            messages.scrollTo({ top: messages.scrollHeight, behavior: 'smooth' });
+
+            cancel.addEventListener('click', () => {
+                card.remove();
+                const text = document.documentElement.lang === 'en'
+                    ? 'Cancelled. No data was changed.'
+                    : 'تم الإلغاء، ولم يتم تغيير أي بيانات.';
+                addBubble(text);
+                history.push({ role: 'assistant', content: text });
+                saveHistory();
+            });
+
+            confirm.addEventListener('click', async () => {
+                confirm.disabled = true;
+                cancel.disabled = true;
+                status.textContent = document.documentElement.lang === 'en' ? 'Executing securely…' : 'جاري التنفيذ بأمان…';
+                try {
+                    const response = await fetch(action.confirm_url, {
+                        method: 'POST',
+                        headers: {
+                            Accept: 'application/json',
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
+                        },
+                        body: JSON.stringify({ locale: document.documentElement.lang === 'en' ? 'en' : 'ar' }),
+                    });
+                    const payload = await response.json().catch(() => ({}));
+                    if (!response.ok) {
+                        throw new Error(Object.values(payload.errors || {}).flat()[0] || payload.message || (document.documentElement.lang === 'en' ? 'The action could not be completed.' : 'تعذر تنفيذ الإجراء.'));
+                    }
+                    card.remove();
+                    const result = addBubble(payload.answer);
+                    if (payload.invoice?.url) {
+                        const link = document.createElement('a');
+                        link.className = 'ai-action-link';
+                        link.href = payload.invoice.url;
+                        link.textContent = document.documentElement.lang === 'en' ? 'Open sales invoices' : 'فتح فواتير البيع';
+                        result.append(document.createElement('br'), link);
+                    }
+                    history.push({ role: 'assistant', content: payload.answer });
+                    saveHistory();
+                    document.dispatchEvent(new CustomEvent('admin:toast', { detail: { message: payload.answer } }));
+                } catch (error) {
+                    status.textContent = error.message;
+                    status.classList.add('is-error');
+                    confirm.disabled = false;
+                    cancel.disabled = false;
+                }
+            });
+        };
+        if (history.length) {
+            messages.innerHTML = '';
+            history.forEach(message => addBubble(message.content, message.role === 'user' ? 'from-user' : ''));
+        }
         const answer = async question => {
             const pending = addBubble(document.documentElement.lang === 'en' ? 'Thinking…' : 'جاري التفكير…', 'is-thinking');
             if (submit) submit.disabled = true;
@@ -39,11 +137,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     }),
                 });
                 const payload = await response.json().catch(() => ({}));
-                if (!response.ok) throw new Error(payload.message || (document.documentElement.lang === 'en' ? 'The assistant is unavailable right now.' : 'المساعد غير متاح حاليًا.'));
+                if (!response.ok) {
+                    const safeMessage = [429, 502, 503].includes(response.status) && payload.message
+                        ? payload.message
+                        : (document.documentElement.lang === 'en' ? 'The assistant is unavailable right now. Please try again.' : 'المساعد غير متاح حاليًا. حاول مرة أخرى.');
+                    throw new Error(safeMessage);
+                }
                 pending.textContent = payload.answer;
                 pending.classList.remove('is-thinking');
                 history.push({ role: 'user', content: question }, { role: 'assistant', content: payload.answer });
-                if (history.length > 8) history.splice(0, history.length - 8);
+                saveHistory();
+                renderAction(payload.action);
             } catch (error) {
                 pending.textContent = error.message;
                 pending.classList.remove('is-thinking');
@@ -52,6 +156,13 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         };
         assistant.querySelectorAll('[data-ai-toggle]').forEach(button => button.addEventListener('click', () => { const open = !assistant.classList.contains('is-open'); assistant.classList.toggle('is-open', open); panel?.setAttribute('aria-hidden', String(!open)); assistant.querySelector('.ai-assistant-trigger')?.setAttribute('aria-expanded', String(open)); }));
+        assistant.querySelector('[data-ai-reset]')?.addEventListener('click', () => {
+            history = [];
+            sessionStorage.removeItem(storageKey);
+            messages.innerHTML = '';
+            addBubble(document.documentElement.lang === 'en' ? 'New conversation started. How can I help?' : 'بدأنا محادثة جديدة. كيف أقدر أساعدك؟');
+            form?.elements.question.focus();
+        });
         assistant.querySelectorAll('[data-ai-question]').forEach(button => button.addEventListener('click', async () => {
             const question = button.dataset.aiQuestion;
             addBubble(question, 'from-user');
@@ -82,7 +193,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (error) { document.dispatchEvent(new CustomEvent('admin:toast', { detail: { message: error.message } })); button.disabled = false; }
     });
     const html = document.documentElement;
-    const toggle = document.querySelector('.theme-toggle');
+    const themeToggles = [...document.querySelectorAll('.theme-toggle')];
     const nav = document.querySelector('.liquid-nav');
     const glow = document.querySelector('.nav-glow');
     const links = [...document.querySelectorAll('.nav-link')];
@@ -115,11 +226,20 @@ document.addEventListener('DOMContentLoaded', () => {
     nav?.addEventListener('mouseleave', () => moveGlow(active));
     window.addEventListener('resize', () => moveGlow(active));
 
-    toggle?.addEventListener('click', () => {
-        const theme = html.dataset.theme === 'dark' ? 'light' : 'dark';
+    const applyTheme = theme => {
         html.dataset.theme = theme;
         localStorage.setItem('basha-theme', theme);
-    });
+        themeToggles.forEach(button => {
+            button.setAttribute('aria-pressed', String(theme === 'dark'));
+            button.setAttribute('title', theme === 'dark' ? 'تفعيل الوضع الفاتح' : 'تفعيل الوضع الداكن');
+        });
+        document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme === 'dark' ? '#06030D' : '#F5F1FA');
+    };
+    applyTheme(html.dataset.theme === 'light' ? 'light' : 'dark');
+    themeToggles.forEach(toggle => toggle.addEventListener('click', () => {
+        const theme = html.dataset.theme === 'dark' ? 'light' : 'dark';
+        applyTheme(theme);
+    }));
 
     document.querySelectorAll('.password-toggle').forEach(button => {
         button.addEventListener('click', () => {
