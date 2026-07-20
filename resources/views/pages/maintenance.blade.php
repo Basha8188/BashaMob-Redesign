@@ -21,6 +21,7 @@
         <div class="form-row"><label>رقم الموبايل<input name="phone" required type="tel" pattern="01[0-9]{9}" placeholder="01xxxxxxxxx"></label><label>البريد الإلكتروني<input name="email" required type="email" placeholder="name@example.com"></label></div>
         <div class="form-row"><label>نوع الجهاز<select name="device"><option>موبايل</option><option>لابتوب</option><option>كمبيوتر</option></select></label><label>الماركة<input name="brand" required type="text" placeholder="مثال: Apple"></label></div>
         <label>وصف المشكلة<textarea name="problem" required placeholder="اكتب تفاصيل المشكلة..."></textarea></label>
+        <label class="maintenance-photo-field">صور الجهاز (اختياري — حتى 4 صور)<input name="photos[]" type="file" accept="image/jpeg,image/png,image/webp" multiple><small>الصور تساعد الفني على مراجعة حالة الجهاز قبل زيارتك.</small></label>
         <button class="btn btn-primary" type="submit">إرسال الطلب</button><p class="quick-maintenance-result" role="status"></p>
     </form>
 </section>

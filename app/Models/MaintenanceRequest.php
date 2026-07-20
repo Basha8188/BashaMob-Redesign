@@ -17,8 +17,17 @@ class MaintenanceRequest extends Model
         'device',
         'brand',
         'problem',
+        'attachments',
         'status',
+        'review_message',
+        'reviewed_by',
+        'reviewed_at',
     ];
+
+    protected function casts(): array
+    {
+        return ['attachments' => 'array', 'reviewed_at' => 'datetime'];
+    }
 
     public function customer()
     {

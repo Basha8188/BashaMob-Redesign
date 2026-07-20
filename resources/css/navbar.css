@@ -1,0 +1,54 @@
+.storefront-body .nav-wrap { top: 18px; }
+.storefront-body .liquid-nav,
+.admin-body .admin-topbar,
+.admin-body .admin-sidebar {
+    border: 1px solid var(--glass-border) !important;
+    background: linear-gradient(145deg, rgba(210, 195, 246, .14), rgba(38, 23, 67, .38)) !important;
+    box-shadow: inset 0 1px rgba(255,255,255,.14), var(--violet-shadow-soft) !important;
+    backdrop-filter: blur(32px) saturate(145%) !important;
+    -webkit-backdrop-filter: blur(32px) saturate(145%) !important;
+}
+html[data-theme="light"] .storefront-body .liquid-nav,
+html[data-theme="light"] .admin-body :is(.admin-topbar,.admin-sidebar) {
+    background: linear-gradient(145deg, rgba(255,255,255,.68), rgba(224,211,245,.55)) !important;
+}
+
+.admin-body .admin-sidebar {
+    border-radius: 29px !important;
+    color: var(--text-primary) !important;
+}
+.admin-body .admin-sidebar nav a {
+    min-height: 43px;
+    border: 1px solid transparent !important;
+    border-radius: 14px !important;
+    color: var(--text-secondary) !important;
+    transition: background var(--motion-base), color var(--motion-base), transform var(--motion-base) !important;
+}
+.admin-body .admin-sidebar nav a:hover {
+    background: rgba(210,195,246,.1) !important;
+    color: var(--text-primary) !important;
+    transform: translateX(-2px);
+}
+.admin-body .admin-sidebar nav a.active {
+    color: #fff !important;
+    border-color: rgba(232,222,255,.17) !important;
+    background: linear-gradient(105deg, rgba(210,195,246,.25), rgba(124,58,237,.2)) !important;
+    box-shadow: inset 0 1px rgba(255,255,255,.12), 0 9px 22px rgba(26,8,59,.2) !important;
+}
+html[data-theme="light"] .admin-body .admin-sidebar nav a.active { color: #36255c !important; }
+.admin-body .sidebar-divider { border-color: rgba(210,195,246,.13) !important; }
+.admin-body .admin-topbar { border-radius: 22px !important; }
+.admin-body :is(.topbar-search,.sidebar-search,.admin-search) {
+    border: 1px solid rgba(210,195,246,.18) !important;
+    border-radius: 15px !important;
+    background: rgba(15,7,31,.22) !important;
+}
+.admin-body :is(.topbar-search,.sidebar-search,.admin-search) input { color: var(--text-primary) !important; }
+.admin-body :is(.topbar-search,.sidebar-search,.admin-search) input::placeholder { color: color-mix(in srgb,var(--text-secondary) 70%,transparent) !important; }
+.admin-body :is(.search-orbit,.admin-icon) { color: var(--lavender) !important; }
+.storefront-body .nav-glow {
+    background: linear-gradient(135deg, rgba(210,195,246,.34), rgba(124,58,237,.17)) !important;
+    box-shadow: inset 0 1px rgba(255,255,255,.14), 0 8px 22px rgba(45,18,89,.18) !important;
+}
+.storefront-body :is(.brand-mark,.brand-symbol) { background: linear-gradient(145deg, #a855f7, #57318c) !important; }
+

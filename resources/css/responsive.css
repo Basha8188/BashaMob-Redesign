@@ -1,0 +1,20 @@
+@media (max-width: 1100px) {
+    .dashboard-insights { grid-template-columns:1fr; }
+    .module-overview { grid-template-columns:repeat(2,1fr); }
+}
+@media (max-width: 760px) {
+    .admin-body .admin-sidebar { border-radius:24px !important; }
+    .admin-body .admin-topbar { border-radius:18px !important; }
+    .dashboard-insights { grid-template-columns:1fr; }
+    .module-overview { grid-template-columns:1fr 1fr; }
+    .repair-pipeline { grid-template-columns:1fr 1fr; }
+    .repair-pipeline article::after { display:none; }
+    .violet-chart { padding:17px; }
+    .chart-bars { gap:5px; }
+}
+@media (max-width: 480px) {
+    .module-overview, .repair-pipeline { grid-template-columns:1fr; }
+    .dashboard-feed__item { grid-template-columns:34px 1fr; }
+    .dashboard-feed__item > strong { grid-column:2; }
+}
+

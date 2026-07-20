@@ -1,17 +1,86 @@
 import './bootstrap';
+import './background';
 import './admin-i18n';
 import './admin-search';
 import './admin-crud';
 
 document.addEventListener('DOMContentLoaded', () => {
-    if (!document.querySelector('.ambient-leaves')) {
-        const leaves = document.createElement('div');
-        leaves.className = 'ambient-leaves';
-        leaves.setAttribute('aria-hidden', 'true');
-        leaves.innerHTML = Array.from({ length: 12 }, (_, index) => `<i style="--leaf:${index}"></i>`).join('');
-        document.body.prepend(leaves);
+    const assistant = document.querySelector('[data-ai-assistant]');
+    if (assistant) {
+        const panel = assistant.querySelector('.ai-assistant-panel');
+        const messages = assistant.querySelector('[data-ai-messages]');
+        const form = assistant.querySelector('[data-ai-form]');
+        const submit = form?.querySelector('button[type="submit"]');
+        const history = [];
+        const addBubble = (text, className = '') => {
+            const bubble = document.createElement('p');
+            bubble.className = className;
+            bubble.textContent = text;
+            messages?.append(bubble);
+            messages?.scrollTo({ top: messages.scrollHeight, behavior: 'smooth' });
+            return bubble;
+        };
+        const answer = async question => {
+            const pending = addBubble(document.documentElement.lang === 'en' ? 'Thinking…' : 'جاري التفكير…', 'is-thinking');
+            if (submit) submit.disabled = true;
+            try {
+                const response = await fetch(assistant.dataset.endpoint, {
+                    method: 'POST',
+                    headers: {
+                        Accept: 'application/json',
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
+                    },
+                    body: JSON.stringify({
+                        question,
+                        page: document.querySelector('h1')?.textContent?.trim() || document.title,
+                        locale: document.documentElement.lang === 'en' ? 'en' : 'ar',
+                        history: history.slice(-8),
+                    }),
+                });
+                const payload = await response.json().catch(() => ({}));
+                if (!response.ok) throw new Error(payload.message || (document.documentElement.lang === 'en' ? 'The assistant is unavailable right now.' : 'المساعد غير متاح حاليًا.'));
+                pending.textContent = payload.answer;
+                pending.classList.remove('is-thinking');
+                history.push({ role: 'user', content: question }, { role: 'assistant', content: payload.answer });
+                if (history.length > 8) history.splice(0, history.length - 8);
+            } catch (error) {
+                pending.textContent = error.message;
+                pending.classList.remove('is-thinking');
+            } finally {
+                if (submit) submit.disabled = false;
+            }
+        };
+        assistant.querySelectorAll('[data-ai-toggle]').forEach(button => button.addEventListener('click', () => { const open = !assistant.classList.contains('is-open'); assistant.classList.toggle('is-open', open); panel?.setAttribute('aria-hidden', String(!open)); assistant.querySelector('.ai-assistant-trigger')?.setAttribute('aria-expanded', String(open)); }));
+        assistant.querySelectorAll('[data-ai-question]').forEach(button => button.addEventListener('click', async () => {
+            const question = button.dataset.aiQuestion;
+            addBubble(question, 'from-user');
+            await answer(question);
+        }));
+        form?.addEventListener('submit', async event => {
+            event.preventDefault();
+            const input = event.currentTarget.elements.question;
+            const question = input.value.trim();
+            if (!question || submit?.disabled) return;
+            addBubble(question, 'from-user');
+            input.value = '';
+            await answer(question);
+            input.focus();
+        });
     }
 
+    document.addEventListener('click', async event => {
+        const button = event.target.closest('[data-request-decision]');
+        if (!button) return;
+        button.disabled = true;
+        try {
+            const response = await fetch(`/admin/customer-requests/${button.dataset.requestType}/${button.dataset.requestId}`, { method: 'PATCH', headers: { Accept: 'application/json', 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content }, body: JSON.stringify({ decision: button.dataset.requestDecision }) });
+            const payload = await response.json();
+            if (!response.ok) throw new Error(payload.message || 'تعذر تحديث الطلب.');
+            const card = button.closest('[data-customer-request-card]'); card.querySelector('[data-request-status]').textContent = payload.status; card.querySelector('footer span')?.remove();
+            document.dispatchEvent(new CustomEvent('admin:toast', { detail: { message: payload.message } }));
+        } catch (error) { document.dispatchEvent(new CustomEvent('admin:toast', { detail: { message: error.message } })); button.disabled = false; }
+    });
     const html = document.documentElement;
     const toggle = document.querySelector('.theme-toggle');
     const nav = document.querySelector('.liquid-nav');
@@ -138,7 +207,17 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     const sidebar = document.querySelector('.admin-sidebar');
-    document.querySelector('.sidebar-toggle')?.addEventListener('click', () => sidebar?.classList.toggle('mobile-open'));
+    const sidebarToggle = document.querySelector('.sidebar-toggle');
+    const syncSidebarToggle = () => sidebarToggle?.setAttribute('aria-expanded', String(window.innerWidth <= 760 ? sidebar?.classList.contains('mobile-open') : html.classList.contains('sidebar-pinned')));
+    sidebarToggle?.addEventListener('click', () => {
+        if (window.innerWidth <= 760) sidebar?.classList.toggle('mobile-open');
+        else {
+            html.classList.toggle('sidebar-pinned');
+            localStorage.setItem('basha-sidebar', html.classList.contains('sidebar-pinned') ? 'pinned' : 'hover');
+        }
+        syncSidebarToggle();
+    });
+    syncSidebarToggle();
 
     const topbarSearch = document.querySelector('.topbar-search input');
     document.addEventListener('keydown', event => {
@@ -183,6 +262,41 @@ document.addEventListener('DOMContentLoaded', () => {
         const printButton = event.target.closest('[data-row-print]');
         if (printButton) printInvoice(printButton.closest('tr'));
     });
+
+    const posWorkspace = document.querySelector('[data-pos-workspace]');
+    if (posWorkspace) {
+        const selection = posWorkspace.querySelector('[data-pos-cart-selection]');
+        const empty = posWorkspace.querySelector('[data-pos-cart-empty]');
+        const quantity = posWorkspace.querySelector('[data-pos-quantity]');
+        const checkout = posWorkspace.querySelector('[data-pos-checkout]');
+        let selectedProduct = null;
+        const updatePosTotal = () => {
+            const amount = Number(selectedProduct?.price || 0) * Math.max(1, Number(quantity?.value || 1));
+            const total = posWorkspace.querySelector('[data-pos-total]');
+            if (total) total.textContent = `${amount.toLocaleString('ar-EG', { minimumFractionDigits: 2 })} ج.م`;
+        };
+        posWorkspace.querySelectorAll('[data-pos-product]').forEach(button => button.addEventListener('click', () => {
+            posWorkspace.querySelectorAll('[data-pos-product]').forEach(item => item.classList.toggle('is-selected', item === button));
+            selectedProduct = { name: button.dataset.name, sku: button.dataset.sku, price: Number(button.dataset.price || 0) };
+            empty.hidden = true; selection.hidden = false; checkout.disabled = false;
+            selection.querySelector('[data-pos-name]').textContent = selectedProduct.name;
+            selection.querySelector('[data-pos-sku]').textContent = selectedProduct.sku;
+            quantity.value = 1; updatePosTotal();
+        }));
+        quantity?.addEventListener('input', updatePosTotal);
+        checkout?.addEventListener('click', () => {
+            if (!selectedProduct) return;
+            document.querySelector('[data-crud-add][data-module="sales"]')?.click();
+            window.setTimeout(() => {
+                const form = document.getElementById('crud-form');
+                if (!form) return;
+                if (form.elements.product_sku) form.elements.product_sku.value = selectedProduct.sku;
+                if (form.elements.quantity) form.elements.quantity.value = quantity.value;
+                if (form.elements.unit_price) form.elements.unit_price.value = selectedProduct.price;
+                if (form.elements.total) form.elements.total.value = selectedProduct.price * Number(quantity.value || 1);
+            }, 80);
+        });
+    }
 
     const welcome = document.getElementById('customer-welcome');
     const customerPage = document.getElementById('customer-request-page');
@@ -413,6 +527,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const details = document.createElement('p'); details.textContent = `${request.name} — ${request.brand} ${request.device}`;
                 const date = document.createElement('small'); date.textContent = `تاريخ التسجيل: ${request.submitted_at}`;
                 card.append(heading, details, date);
+                if (request.review_message) { const note = document.createElement('p'); note.className = 'tracking-review-message'; note.textContent = request.review_message; card.append(note); }
                 return card;
             }));
         } catch (error) {

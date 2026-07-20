@@ -5,11 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'الإدارة') | BashaMob</title>
-    <script>(()=>{const l=localStorage.getItem('basha-admin-language')||'ar';document.documentElement.lang=l;document.documentElement.dir=l==='ar'?'rtl':'ltr';document.documentElement.dataset.locale=l;document.documentElement.dataset.theme=localStorage.getItem('basha-theme')||'dark';document.documentElement.dataset.palette=localStorage.getItem('basha-palette')||'ocean';document.documentElement.dataset.adminUi='cosmic'})();</script>
-    @vite(['resources/css/app.css', 'resources/css/admin.css', 'resources/js/app.js'])
+    <script>(()=>{const l=localStorage.getItem('basha-admin-language')||'ar';document.documentElement.lang=l;document.documentElement.dir=l==='ar'?'rtl':'ltr';document.documentElement.dataset.locale=l;document.documentElement.dataset.theme=localStorage.getItem('basha-theme')||'dark';document.documentElement.dataset.palette='violet';document.documentElement.dataset.adminUi='cosmic';if(localStorage.getItem('basha-sidebar')==='pinned'&&innerWidth>760)document.documentElement.classList.add('sidebar-pinned')})();</script>
+    @vite(['resources/css/app.css', 'resources/css/admin.css', 'resources/css/violet.css', 'resources/js/app.js'])
 </head>
 <body class="admin-body">
-<div class="admin-cosmic-bg" aria-hidden="true"><i></i><i></i><i></i></div>
+<x-aurora-background variant="admin" />
 <div class="admin-device-rain" aria-hidden="true">
     @for($device = 1; $device <= 18; $device++)
         <i class="{{ $device % 3 === 0 ? 'falling-laptop' : 'falling-phone' }}" style="--rain-x:{{ ($device * 37) % 101 }}%;--rain-delay:-{{ $device * 2 }}s;--rain-duration:{{ 15 + ($device % 7) }}s;--rain-scale:{{ (70 + (($device * 11) % 45)) / 100 }};"></i>
@@ -40,8 +40,9 @@
     <div><span>نوع الإجراء</span><strong id="receipt-action">—</strong></div>
     <div><span>التاريخ والوقت</span><strong id="receipt-date">—</strong></div>
     <div><span>القيمة</span><strong id="receipt-amount">—</strong></div>
-    <div><span>الموظف</span><strong>مدير عام</strong></div>
+    <div><span>الموظف</span><strong>{{ auth()->user()->name }}</strong></div>
     <footer>شكرًا لاستخدام نظام BashaMob</footer>
 </article>
+<x-ai-assistant />
 </body>
 </html>

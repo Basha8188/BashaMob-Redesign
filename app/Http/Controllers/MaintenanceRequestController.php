@@ -8,6 +8,8 @@ use App\Models\MaintenanceRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rules\File;
 
 class MaintenanceRequestController extends Controller
 {
@@ -33,6 +35,7 @@ class MaintenanceRequestController extends Controller
                 'brand' => $maintenanceRequest->brand,
                 'status' => $this->statusLabel($maintenanceRequest->status),
                 'status_key' => $maintenanceRequest->status,
+                'review_message' => $maintenanceRequest->review_message,
                 'submitted_at' => $maintenanceRequest->created_at->translatedFormat('j F Y، g:i a'),
             ]);
 
@@ -51,9 +54,14 @@ class MaintenanceRequestController extends Controller
             'device' => ['required', 'in:موبايل,لابتوب,كمبيوتر'],
             'brand' => ['required', 'string', 'max:80'],
             'problem' => ['required', 'string', 'max:3000'],
+            'photos' => ['nullable', 'array', 'max:4'],
+            'photos.*' => ['nullable', File::image()->types(['jpg', 'jpeg', 'png', 'webp'])->max(5 * 1024)],
         ]);
 
-        $maintenanceRequest = DB::transaction(function () use ($validated) {
+        $attachments = collect($request->file('photos', []))->map(fn ($photo) => $photo->store('maintenance-requests', 'public'))->all();
+        unset($validated['photos']);
+
+        $maintenanceRequest = DB::transaction(function () use ($validated, $attachments) {
             $customer = Customer::withTrashed()->firstOrNew(['phone' => $validated['phone']]);
             $customer->fill([
                 'name' => $validated['name'],
@@ -64,6 +72,7 @@ class MaintenanceRequestController extends Controller
 
             return MaintenanceRequest::create([
                 ...$validated,
+                'attachments' => $attachments,
                 'request_number' => $this->nextRequestNumber(),
                 'status' => 'pending_review',
             ]);
@@ -91,6 +100,8 @@ class MaintenanceRequestController extends Controller
     {
         return match ($status) {
             'pending_review' => 'قيد المراجعة',
+            'approved' => 'تمت الموافقة',
+            'rejected' => 'مرفوض',
             'received' => 'تم استلام الجهاز',
             'in_progress' => 'قيد الإصلاح',
             'waiting_parts' => 'بانتظار قطعة غيار',

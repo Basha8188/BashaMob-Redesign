@@ -42,4 +42,10 @@ return [
         'language' => env('WHATSAPP_TEMPLATE_LANGUAGE', 'ar'),
     ],
 
+    'openai' => [
+        'key' => env('OPENAI_API_KEY'),
+        'model' => env('OPENAI_MODEL', 'gpt-5.6-luna'),
+        'url' => env('OPENAI_API_URL', 'https://api.openai.com/v1/responses'),
+    ],
+
 ];

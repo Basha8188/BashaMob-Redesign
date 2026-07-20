@@ -13,6 +13,7 @@ class CustomerOrder extends Model
         return [
             'items' => 'array',
             'total' => 'decimal:2',
+            'reviewed_at' => 'datetime',
         ];
     }
 

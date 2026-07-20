@@ -15,6 +15,8 @@ use Illuminate\Support\Facades\Storage;
 
 class AdminModuleDataService
 {
+    public function __construct(private InventoryValuationService $inventoryValue) {}
+
     public const META = [
         'store' => ['بيانات المحل', 'حدّث اسم المحل وبيانات التواصل والفواتير.'], 'products' => ['المنتجات والبضاعة', 'أضف المنتجات والأسعار والكميات والأرقام التسلسلية.'],
         'sales' => ['المبيعات', 'أنشئ فواتير البيع وتابع المدفوعات والمرتجعات.'], 'purchases' => ['المشتريات', 'سجّل فواتير الموردين واستلام البضاعة.'],
@@ -25,7 +27,7 @@ class AdminModuleDataService
     ];
 
     public const HEADERS = [
-        'products' => ['كود المنتج', 'الباركود', 'اسم المنتج', 'الماركة', 'سعر البيع', 'الكمية'], 'sales' => ['رقم الفاتورة', 'العميل', 'التاريخ', 'الإجمالي', 'الحالة'],
+        'products' => ['كود المنتج', 'الباركود', 'اسم المنتج', 'الماركة', 'تكلفة الشراء', 'سعر البيع', 'الكمية'], 'sales' => ['رقم الفاتورة', 'العميل', 'التاريخ', 'الإجمالي', 'الحالة'],
         'purchases' => ['رقم الفاتورة', 'المورد', 'التاريخ', 'الإجمالي', 'الحالة'], 'inventory' => ['المخزن', 'المنتج', 'الرصيد الحالي', 'حد الطلب', 'الحالة'],
         'repairs' => ['رقم التذكرة', 'العميل', 'الجهاز', 'العطل', 'الحالة'], 'customers' => ['اسم العميل', 'رقم الهاتف', 'البريد الإلكتروني', 'السجل', 'الحالة'],
         'suppliers' => ['اسم المورد', 'رقم الهاتف', 'الرصيد', 'حالة الحساب'], 'expenses' => ['رقم الحركة', 'البيان', 'التاريخ', 'القيمة', 'النوع'],
@@ -38,7 +40,7 @@ class AdminModuleDataService
     public function rows(string $module): array
     {
         return match ($module) {
-            'products' => Product::with(['brand', 'stocks'])->latest()->paginate(25)->through(fn ($x) => $this->row($x->id, [$x->sku, $x->barcode ?? '—', $x->name, $x->brand?->name ?? '—', number_format((float) $x->sale_price, 2), number_format((float) $x->stocks->sum('quantity'), 3)], $x->image_path ? Storage::disk('public')->url($x->image_path) : null))->items(),
+            'products' => Product::with(['brand', 'stocks'])->latest()->paginate(25)->through(fn ($x) => $this->row($x->id, [$x->sku, $x->barcode ?? '—', $x->name, $x->brand?->name ?? '—', number_format((float) $x->purchase_price, 0), number_format((float) $x->sale_price, 0), number_format((float) $x->stocks->sum('quantity'), 0)], $x->image_path ? Storage::disk('public')->url($x->image_path) : null))->items(),
             'sales' => Sale::with('customer')->latest()->paginate(25)->through(fn ($x) => $this->row($x->id, [$x->invoice_number, $x->customer?->name ?? 'عميل نقدي', $x->created_at->format('Y-m-d'), number_format((float) $x->total, 2), $x->status]))->items(),
             'purchases' => Purchase::with('supplier')->latest()->paginate(25)->through(fn ($x) => $this->row($x->id, [$x->invoice_number, $x->supplier?->name ?? '—', $x->created_at->format('Y-m-d'), number_format((float) $x->total, 2), $x->status]))->items(),
             'inventory' => WarehouseStock::with(['warehouse', 'product'])->latest()->paginate(25)->through(fn ($x) => $this->row($x->id, [$x->warehouse->name, $x->product->name, $x->quantity, $x->product->reorder_level, (float) $x->quantity <= $x->product->reorder_level ? 'منخفض' : 'متوفر']))->items(),
@@ -62,7 +64,7 @@ class AdminModuleDataService
     {
         return [
             $this->row(1, ['إجمالي المبيعات', 'كل الفواتير', number_format((float) Sale::where('status', 'finalized')->sum('total'), 2), 'عرض التقرير', 'محدث']),
-            $this->row(2, ['قيمة المخزون', 'كل المخازن', number_format((float) WarehouseStock::sum(DB::raw('quantity * average_cost')), 2), 'عرض التقرير', 'محدث']),
+            $this->row(2, ['قيمة المخزون', 'كل المخازن', number_format($this->inventoryValue->total(), 2), 'عرض التقرير', 'محدث']),
             $this->row(3, ['تذاكر الصيانة المفتوحة', 'الحالية', RepairTicket::whereNotIn('status', ['delivered', 'cancelled'])->count(), 'عرض التقرير', 'محدث']),
         ];
     }

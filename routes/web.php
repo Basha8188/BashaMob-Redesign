@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\BrandController;
 use App\Http\Controllers\Admin\CashRegisterController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\CustomerController;
+use App\Http\Controllers\Admin\CustomerRequestController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\ExpenseController;
 use App\Http\Controllers\Admin\InventoryController;
@@ -20,6 +21,7 @@ use App\Http\Controllers\Admin\WarehouseController;
 use App\Http\Controllers\Auth\StaffRecoveryController;
 use App\Http\Controllers\Auth\StaffSessionController;
 use App\Http\Controllers\CustomerOrderController;
+use App\Http\Controllers\AiAssistantController;
 use App\Http\Controllers\MaintenanceRequestController;
 use Illuminate\Support\Facades\Route;
 
@@ -31,6 +33,7 @@ Route::post('/maintenance/track', [MaintenanceRequestController::class, 'track']
 Route::post('/shop/orders', [CustomerOrderController::class, 'store'])->middleware('throttle:8,1')->name('customer.orders.store');
 Route::view('/computers', 'pages.computers')->name('computers');
 Route::redirect('/customer/device-request', '/maintenance')->name('customer.device-request');
+Route::post('/assistant/ask', AiAssistantController::class)->middleware('throttle:20,1')->name('assistant.ask');
 
 Route::middleware('guest')->group(function () {
     Route::get('/staff/login', [StaffSessionController::class, 'create'])->name('staff.login');
@@ -45,10 +48,12 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'staff'])->group(fun
     Route::get('/', DashboardController::class)->middleware('permission:view-dashboard')->name('dashboard');
     Route::post('/products', [ProductController::class, 'store']);
     Route::patch('/products/{product}', [ProductController::class, 'update']);
+    Route::get('/products/{product}/barcode', [ProductController::class, 'barcode'])->name('products.barcode');
     Route::delete('/products/{product}', [ProductController::class, 'destroy']);
     Route::post('/customers', [CustomerController::class, 'store']);
     Route::patch('/customers/{customer}', [CustomerController::class, 'update']);
     Route::delete('/customers/{customer}', [CustomerController::class, 'destroy']);
+    Route::patch('/customer-requests/{type}/{id}', [CustomerRequestController::class, 'update'])->name('customer-requests.update');
     Route::post('/suppliers', [SupplierController::class, 'store']);
     Route::patch('/suppliers/{supplier}', [SupplierController::class, 'update']);
     Route::delete('/suppliers/{supplier}', [SupplierController::class, 'destroy']);

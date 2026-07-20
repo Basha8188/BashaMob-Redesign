@@ -1,0 +1,75 @@
+:root {
+    --aurora-ink: #06030d;
+    --aurora-ink-soft: #0b0618;
+    --aurora-deep-violet: #211238;
+    --aurora-violet: #4b2e83;
+    --aurora-purple: #6d4bd2;
+    --aurora-lavender: #cdbaf7;
+    --aurora-soft-blue: #8da7d8;
+    --aurora-white-glow: rgba(255, 255, 255, .08);
+    --aurora-ribbon-opacity: .38;
+    --aurora-mesh-opacity: .5;
+    --aurora-fog-opacity: .26;
+    --aurora-noise-opacity: .022;
+    --aurora-depth-blur: 130px;
+    --aurora-near-blur: 78px;
+    --aurora-duration-slow: 50s;
+    --aurora-duration-medium: 35s;
+    --aurora-duration-near: 25s;
+    --aurora-pointer-x: 0px;
+    --aurora-pointer-y: 0px;
+    --bg-primary: #f5f1fa;
+    --bg-secondary: #ebe3f5;
+    --violet-dark: #36255c;
+    --violet-primary: #6842a5;
+    --violet-glow: #8b5cf6;
+    --lavender: #d2c3f6;
+    --lavender-light: #e9e1f8;
+    --text-primary: #241a35;
+    --text-secondary: #665a76;
+    --glass: rgba(255, 255, 255, .48);
+    --glass-strong: rgba(247, 242, 255, .72);
+    --glass-soft: rgba(210, 195, 246, .27);
+    --glass-border: rgba(255, 255, 255, .7);
+    --glass-border-soft: rgba(104, 66, 165, .15);
+    --violet-shadow: 0 24px 70px rgba(64, 37, 102, .15);
+    --violet-shadow-soft: 0 12px 34px rgba(64, 37, 102, .11);
+    --radius-xl: 30px;
+    --radius-lg: 22px;
+    --radius-md: 15px;
+    --motion-fast: 180ms;
+    --motion-base: 240ms;
+}
+
+html[data-theme="dark"] {
+    --bg-primary: #0b0618;
+    --bg-secondary: #160b2d;
+    --violet-dark: #36255c;
+    --violet-primary: #7c3aed;
+    --violet-glow: #a855f7;
+    --lavender: #d2c3f6;
+    --lavender-light: #e9e1f8;
+    --text-primary: #f8f7fc;
+    --text-secondary: #c9c1d8;
+    --glass: rgba(35, 23, 61, .48);
+    --glass-strong: rgba(31, 18, 57, .72);
+    --glass-soft: rgba(125, 82, 183, .16);
+    --glass-border: rgba(232, 222, 255, .18);
+    --glass-border-soft: rgba(210, 195, 246, .12);
+    --violet-shadow: 0 28px 80px rgba(8, 2, 22, .48), 0 0 44px rgba(124, 58, 237, .1);
+    --violet-shadow-soft: 0 14px 38px rgba(7, 2, 20, .34);
+}
+
+html[data-theme="light"] {
+    --aurora-ink: #eee9f7;
+    --aurora-ink-soft: #e5dcf2;
+    --aurora-deep-violet: #b9a4d6;
+    --aurora-violet: #8e73ba;
+    --aurora-purple: #8063c2;
+    --aurora-lavender: #d8caf5;
+    --aurora-soft-blue: #9eadd0;
+    --aurora-ribbon-opacity: .2;
+    --aurora-mesh-opacity: .28;
+    --aurora-fog-opacity: .28;
+    --aurora-noise-opacity: .018;
+}

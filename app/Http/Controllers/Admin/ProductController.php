@@ -12,6 +12,7 @@ use App\Models\Warehouse;
 use App\Models\WarehouseStock;
 use App\Services\ActivityLogger;
 use App\Services\InventoryService;
+use App\Services\Ean13BarcodeService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -30,10 +31,10 @@ class ProductController extends Controller
                 $d = $request->validated();
                 $brandName = $d['brand'] ?? null;
                 $brand = $brandName ? Brand::firstOrCreate(['name' => $brandName], ['slug' => Str::slug($brandName).'-'.Str::lower(Str::random(4))]) : null;
-                $p = Product::create(['sku' => $d['sku'], 'barcode' => ($d['barcode'] ?? null) ?: $this->generateBarcode(), 'name' => $d['name'], 'brand_id' => $brand?->id, 'image_path' => $imagePath, 'tracking_type' => ProductTrackingType::Quantity, 'sale_price' => $d['price'], 'created_by' => $request->user()->id]);
+                $p = Product::create(['sku' => $d['sku'], 'barcode' => ($d['barcode'] ?? null) ?: $this->generateBarcode(), 'name' => $d['name'], 'brand_id' => $brand?->id, 'image_path' => $imagePath, 'tracking_type' => ProductTrackingType::Quantity, 'purchase_price' => $d['purchase_cost'], 'sale_price' => $d['price'], 'created_by' => $request->user()->id]);
                 $w = Warehouse::where('is_default', true)->firstOrFail();
                 if ((float) $d['quantity'] > 0) {
-                    $this->inventory->adjust($w, $p, (float) $d['quantity'], StockMovementType::OpeningBalance, $p);
+                    $this->inventory->adjust($w, $p, (float) $d['quantity'], StockMovementType::OpeningBalance, $p, unitCost: (float) $d['purchase_cost']);
                 }
                 ActivityLogger::record('product.created', $p, newValues: $p->toArray());
 
@@ -59,7 +60,8 @@ class ProductController extends Controller
                 $d = $request->validated();
                 $brandName = $d['brand'] ?? null;
                 $brand = $brandName ? Brand::firstOrCreate(['name' => $brandName], ['slug' => Str::slug($brandName).'-'.Str::lower(Str::random(4))]) : null;
-                $product->update(['sku' => $d['sku'], 'barcode' => ($d['barcode'] ?? null) ?: ($product->barcode ?: $this->generateBarcode()), 'name' => $d['name'], 'brand_id' => $brand?->id, 'image_path' => $newImagePath ?: $product->image_path, 'sale_price' => $d['price'], 'updated_by' => $request->user()->id]);
+                $product->update(['sku' => $d['sku'], 'barcode' => ($d['barcode'] ?? null) ?: ($product->barcode ?: $this->generateBarcode()), 'name' => $d['name'], 'brand_id' => $brand?->id, 'image_path' => $newImagePath ?: $product->image_path, 'purchase_price' => $d['purchase_cost'], 'sale_price' => $d['price'], 'updated_by' => $request->user()->id]);
+                WarehouseStock::where('product_id', $product->id)->where('average_cost', '<=', 0)->update(['average_cost' => $d['purchase_cost']]);
                 if (array_key_exists('quantity', $d)) {
                     $w = Warehouse::where('is_default', true)->firstOrFail();
                     $current = (float) WarehouseStock::where('warehouse_id', $w->id)->where('product_id', $product->id)->sum('quantity');
@@ -102,11 +104,21 @@ class ProductController extends Controller
         return response()->json(['message' => 'تم حذف المنتج.']);
     }
 
+    public function barcode(Product $product, Ean13BarcodeService $barcodes)
+    {
+        abort_unless(request()->user()->can('view-products'), 403);
+
+        return response($barcodes->svg($product->barcode, $product->name), 200, [
+            'Content-Type' => 'image/svg+xml; charset=UTF-8',
+            'Content-Disposition' => 'inline; filename="barcode-'.$product->sku.'.svg"',
+        ]);
+    }
+
     private function row(Product $p): array
     {
         $p->load(['brand', 'stocks']);
 
-        return ['id' => $p->id, 'cells' => [$p->sku, $p->barcode, $p->name, $p->brand?->name ?? '—', number_format((float) $p->sale_price, 2), number_format((float) $p->stocks->sum('quantity'), 3)], 'image_url' => $p->image_path ? Storage::disk('public')->url($p->image_path) : null];
+        return ['id' => $p->id, 'cells' => [$p->sku, $p->barcode, $p->name, $p->brand?->name ?? '—', number_format((float) $p->purchase_price, 0), number_format((float) $p->sale_price, 0), number_format((float) $p->stocks->sum('quantity'), 0)], 'image_url' => $p->image_path ? Storage::disk('public')->url($p->image_path) : null];
     }
 
     private function generateBarcode(): string

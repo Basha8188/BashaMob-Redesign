@@ -5,7 +5,7 @@ const sharedStatus = [option('نشط', 'Active'), option('موقوف', 'Suspende
 const schemas = {
     products: {
         ar: 'منتج', en: 'Product', description: option('أدخل بيانات المنتج والسعر والكمية المتاحة.', 'Enter the product, price and available quantity.'),
-        fields: [field('sku','كود المنتج / SKU','Product code / SKU'), field('barcode','الباركود (اتركه فارغًا للتوليد التلقائي)','Barcode (leave blank to auto-generate)','text',{ required:false,inputmode:'numeric',minlength:'13',maxlength:'13',pattern:'[0-9]{13}' }), field('name','اسم المنتج','Product name'), field('brand','الماركة','Brand'), field('price','سعر البيع','Sale price','text',{ inputmode:'decimal' }), field('quantity','الكمية','Quantity','number',{ min:'0' }), field('image','صورة المنتج','Product image','file',{ required:false,table:false,wide:true,accept:'image/jpeg,image/png,image/webp' })]
+        fields: [field('sku','كود المنتج / SKU','Product code / SKU'), field('barcode','الباركود (اتركه فارغًا للتوليد التلقائي)','Barcode (leave blank to auto-generate)','text',{ required:false,inputmode:'numeric',minlength:'13',maxlength:'13',pattern:'[0-9]{13}' }), field('name','اسم المنتج','Product name'), field('brand','الماركة','Brand'), field('purchase_cost','سعر الشراء','Purchase price','number',{ min:'0',step:'1' }), field('price','سعر البيع','Sale price','number',{ min:'0',step:'1' }), field('quantity','الكمية','Quantity','number',{ min:'0',step:'1' }), field('image','صورة المنتج','Product image','file',{ required:false,table:false,wide:true,accept:'image/jpeg,image/png,image/webp' })]
     },
     sales: {
         ar: 'فاتورة بيع', en: 'Sales invoice', description: option('أنشئ فاتورة بيع واربطها بالعميل وحالة السداد.', 'Create a sales invoice and set its customer and payment status.'),
@@ -13,7 +13,7 @@ const schemas = {
     },
     purchases: {
         ar: 'فاتورة شراء', en: 'Purchase invoice', description: option('سجّل فاتورة المورد وحالة استلام البضاعة.', 'Record the supplier invoice and receiving status.'),
-        fields: [field('number','رقم الفاتورة (اتركه فارغًا للتوليد)','Invoice number','text',{required:false}), field('supplier','اسم المورد','Supplier name'), field('date','تاريخ الشراء','Purchase date','date'), field('total','إجمالي الفاتورة','Invoice total','text',{ inputmode:'decimal' }), field('status','حالة الاستلام','Receiving status','select',{ options:[option('مستلمة','Received'),option('قيد الانتظار','Pending')] }), field('supplier_phone','هاتف المورد','Supplier phone','tel',{table:false,required:false}), field('product_sku','كود المنتج SKU','Product SKU','text',{table:false}), field('quantity','الكمية','Quantity','number',{table:false,min:'0.001'}), field('unit_cost','تكلفة الوحدة','Unit cost','text',{table:false,inputmode:'decimal'}), field('paid_amount','المدفوع','Paid amount','text',{table:false,inputmode:'decimal',required:false})]
+        fields: [field('number','رقم الفاتورة (اتركه فارغًا للتوليد)','Invoice number','text',{required:false}), field('supplier','اسم المورد','Supplier name'), field('date','تاريخ الشراء','Purchase date','date'), field('total','إجمالي الفاتورة','Invoice total','text',{ inputmode:'decimal' }), field('status','حالة الاستلام','Receiving status','select',{ options:[option('مستلمة','Received'),option('قيد الانتظار','Pending')] }), field('supplier_phone','هاتف المورد','Supplier phone','tel',{table:false,required:false}), field('product_sku','كود المنتج SKU','Product SKU','text',{table:false}), field('quantity','الكمية','Quantity','number',{table:false,min:'1',step:'1'}), field('unit_cost','تكلفة الوحدة','Unit cost','number',{table:false,min:'0',step:'1'}), field('paid_amount','المدفوع','Paid amount','number',{table:false,min:'0',step:'1',required:false})]
     },
     inventory: {
         ar: 'حركة مخزون', en: 'Inventory movement', description: option('حدّد المخزن والمنتج والرصيد وحد إعادة الطلب.', 'Set the warehouse, product, stock and reorder level.'),
@@ -100,7 +100,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const canEdit = !['sales', 'purchases', 'inventory', 'reports'].includes(module);
         const canDelete = !['inventory', 'reports', 'repairs'].includes(module);
         const deleteTitle = ['sales', 'purchases'].includes(module) ? 'إلغاء' : 'حذف';
-        actions.innerHTML = `<div class="row-actions">${module === 'sales' ? '<button type="button" data-row-print title="طباعة الفاتورة">▣</button>' : ''}${canEdit ? '<button type="button" data-row-edit title="تعديل">✎</button>' : ''}${canDelete ? `<button type="button" data-row-delete title="${deleteTitle}">×</button>` : ''}</div>`;
+        actions.innerHTML = `<div class="row-actions">${module === 'products' ? '<a data-row-barcode title="عرض وطباعة الباركود">▥</a>' : ''}${module === 'sales' ? '<button type="button" data-row-print title="طباعة الفاتورة">▣</button>' : ''}${canEdit ? '<button type="button" data-row-edit title="تعديل">✎</button>' : ''}${canDelete ? `<button type="button" data-row-delete title="${deleteTitle}">×</button>` : ''}</div>`;
+        const barcodeLink = actions.querySelector('[data-row-barcode]');
+        if (barcodeLink && id) { barcodeLink.href = `/admin/products/${id}/barcode`; barcodeLink.target = '_blank'; }
         row.append(actions);
         return row;
     };
@@ -160,7 +162,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (descriptor.type !== 'file') input.value = descriptor.type === 'date' ? normalizeDate(value) : value;
         input.required = descriptor.required !== false;
         input.placeholder = isArabic() ? `أدخل ${descriptor.ar}` : `Enter ${descriptor.en.toLowerCase()}`;
-        ['inputmode','min','max','minlength','maxlength','pattern','accept'].forEach(attribute => { if (descriptor[attribute] !== undefined) input.setAttribute(attribute, descriptor[attribute]); });
+        ['inputmode','min','max','step','minlength','maxlength','pattern','accept'].forEach(attribute => { if (descriptor[attribute] !== undefined) input.setAttribute(attribute, descriptor[attribute]); });
         wrapper.append(input);
         if (descriptor.type === 'file') {
             const hint = document.createElement('small');
@@ -203,6 +205,20 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('crud-description').textContent = text(schema.description);
         document.getElementById('crud-submit').textContent = isArabic() ? (row ? 'حفظ التعديلات' : `إضافة ${schema.ar}`) : (row ? 'Save changes' : `Add ${schema.en}`);
         renderFields(schema, row);
+        if (module === 'products') {
+            const profit = document.createElement('output');
+            profit.className = 'product-profit-preview';
+            fieldsRoot.append(profit);
+            const updateProfit = () => {
+                const purchase = Number(form.elements.purchase_cost?.value || 0);
+                const sale = Number(form.elements.price?.value || 0);
+                const quantity = Number(form.elements.quantity?.value || 0);
+                const unit = sale - purchase;
+                profit.textContent = isArabic() ? `ربح الوحدة: ${unit.toLocaleString()} ج.م — إجمالي الربح المتوقع: ${(unit * quantity).toLocaleString()} ج.م` : `Unit profit: ${unit.toLocaleString()} EGP — expected total: ${(unit * quantity).toLocaleString()} EGP`;
+            };
+            ['purchase_cost','price','quantity'].forEach(name => form.elements[name]?.addEventListener('input', updateProfit));
+            updateProfit();
+        }
         modal.classList.add('is-open');
         modal.setAttribute('aria-hidden', 'false');
         window.setTimeout(() => fieldsRoot.querySelector('input,select')?.focus(), 100);
