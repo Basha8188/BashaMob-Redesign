@@ -8,6 +8,7 @@ use App\Models\Product;
 use App\Models\RepairTicket;
 use App\Models\Warehouse;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class RepairService
 {
@@ -20,6 +21,11 @@ class RepairService
             $old = $ticket->status;
             if ($old === $status) {
                 return $ticket;
+            }
+            if ($status === RepairStatus::InProgress
+                && ! $ticket->quotations()->where('status', 'approved')->exists()
+                && ! auth()->user()?->can('repair_quotations.approve_override')) {
+                throw ValidationException::withMessages(['status' => 'لا يمكن بدء الإصلاح قبل موافقة العميل على عرض السعر.']);
             }
             $ticket->update(['status' => $status]);
             $ticket->statusHistory()->create(['from_status' => $old->value, 'to_status' => $status->value, 'notes' => $notes, 'changed_by' => auth()->id()]);

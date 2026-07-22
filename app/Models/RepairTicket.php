@@ -31,4 +31,24 @@ class RepairTicket extends Model
     {
         return $this->hasMany(RepairPart::class);
     }
+
+    public function device()
+    {
+        return $this->belongsTo(CustomerDevice::class, 'customer_device_id');
+    }
+
+    public function inspection()
+    {
+        return $this->hasOne(RepairInspection::class);
+    }
+
+    public function quotations()
+    {
+        return $this->hasMany(RepairQuotation::class);
+    }
+
+    public function technician()
+    {
+        return $this->belongsTo(User::class, 'technician_id');
+    }
 }

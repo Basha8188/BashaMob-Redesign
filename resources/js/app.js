@@ -328,15 +328,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const sidebar = document.querySelector('.admin-sidebar');
     const sidebarToggle = document.querySelector('.sidebar-toggle');
-    const syncSidebarToggle = () => sidebarToggle?.setAttribute('aria-expanded', String(window.innerWidth <= 760 ? sidebar?.classList.contains('mobile-open') : html.classList.contains('sidebar-pinned')));
-    sidebarToggle?.addEventListener('click', () => {
+    const sidebarPinButtons = [...document.querySelectorAll('[data-sidebar-pin]')];
+    const syncSidebarToggle = () => {
+        const expanded = window.innerWidth <= 760 ? sidebar?.classList.contains('mobile-open') : html.classList.contains('sidebar-pinned');
+        sidebarToggle?.setAttribute('aria-expanded', String(expanded));
+        sidebarToggle?.setAttribute('title', expanded ? 'إلغاء تثبيت القائمة الجانبية' : 'تثبيت القائمة الجانبية');
+        sidebarPinButtons.forEach(button => {
+            button.setAttribute('aria-pressed', String(expanded));
+            button.setAttribute('title', expanded ? 'إلغاء تثبيت القائمة' : 'تثبيت القائمة');
+        });
+    };
+    const toggleSidebar = () => {
         if (window.innerWidth <= 760) sidebar?.classList.toggle('mobile-open');
         else {
             html.classList.toggle('sidebar-pinned');
             localStorage.setItem('basha-sidebar', html.classList.contains('sidebar-pinned') ? 'pinned' : 'hover');
         }
         syncSidebarToggle();
-    });
+    };
+    sidebarToggle?.addEventListener('click', toggleSidebar);
+    sidebarPinButtons.forEach(button => button.addEventListener('click', toggleSidebar));
     syncSidebarToggle();
 
     const topbarSearch = document.querySelector('.topbar-search input');

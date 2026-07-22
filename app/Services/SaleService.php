@@ -14,7 +14,7 @@ use Illuminate\Validation\ValidationException;
 
 class SaleService
 {
-    public function __construct(private InventoryService $inventory, private NumberSequenceService $numbers) {}
+    public function __construct(private InventoryService $inventory, private NumberSequenceService $numbers, private DevicePassportService $passports) {}
 
     public function finalize(Sale $sale, array $payments = []): Sale
     {
@@ -37,6 +37,7 @@ class SaleService
                         throw ValidationException::withMessages(['quantity' => 'المنتج المتسلسل يجب أن تكون كميته 1.']);
                     }
                     $serial->update(['status' => ProductSerialStatus::Sold, 'sold_at' => now(), 'sale_item_id' => $item->id]);
+                    $this->passports->syncSoldSerial($serial->fresh(), $sale);
                 }
                 $this->inventory->adjust($sale->warehouse, $item->product, -(float) $item->quantity, StockMovementType::Sale, $sale, $item->product_variant_id ? $item->product->variants()->find($item->product_variant_id) : null, $item->serial, (float) $item->unit_price);
             }

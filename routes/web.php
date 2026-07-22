@@ -6,24 +6,30 @@ use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\CustomerRequestController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\DevicePassportController;
 use App\Http\Controllers\Admin\ExpenseController;
 use App\Http\Controllers\Admin\InventoryController;
 use App\Http\Controllers\Admin\ModuleController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\PurchaseController;
 use App\Http\Controllers\Admin\RepairController;
+use App\Http\Controllers\Admin\RepairInspectionController;
+use App\Http\Controllers\Admin\RepairQuotationController;
 use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\SaleController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\StaffController;
 use App\Http\Controllers\Admin\SupplierController;
 use App\Http\Controllers\Admin\WarehouseController;
+use App\Http\Controllers\AiActionController;
+use App\Http\Controllers\AiAssistantController;
 use App\Http\Controllers\Auth\StaffRecoveryController;
 use App\Http\Controllers\Auth\StaffSessionController;
 use App\Http\Controllers\CustomerOrderController;
-use App\Http\Controllers\AiActionController;
-use App\Http\Controllers\AiAssistantController;
 use App\Http\Controllers\MaintenanceRequestController;
+use App\Http\Controllers\PublicDevicePassportController;
+use App\Http\Controllers\PublicMaintenancePortalController;
+use App\Http\Controllers\PublicRepairQuotationController;
 use Illuminate\Support\Facades\Route;
 
 Route::view('/', 'pages.home')->name('home');
@@ -39,6 +45,10 @@ Route::post('/assistant/actions/{token}/confirm', [AiActionController::class, 'c
     ->whereUuid('token')
     ->middleware(['auth', 'staff', 'throttle:10,1'])
     ->name('assistant.actions.confirm');
+Route::get('/device-passports/verify/{code}', PublicDevicePassportController::class)->middleware(['signed', 'throttle:30,1'])->name('device-passports.verify');
+Route::get('/maintenance/portal/{ticket}', PublicMaintenancePortalController::class)->middleware(['signed', 'throttle:30,1'])->name('maintenance.portal');
+Route::get('/repair-quotation/{token}', [PublicRepairQuotationController::class, 'show'])->middleware('throttle:30,1')->name('repair-quotations.public.show');
+Route::post('/repair-quotation/{token}/respond', [PublicRepairQuotationController::class, 'respond'])->middleware('throttle:8,1')->name('repair-quotations.public.respond');
 
 Route::middleware('guest')->group(function () {
     Route::get('/staff/login', [StaffSessionController::class, 'create'])->name('staff.login');
@@ -51,6 +61,16 @@ Route::post('/staff/logout', [StaffSessionController::class, 'destroy'])->middle
 
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'staff'])->group(function () {
     Route::get('/', DashboardController::class)->middleware('permission:view-dashboard')->name('dashboard');
+    Route::get('/device-passports', [DevicePassportController::class, 'index'])->middleware('permission:device_passports.view')->name('device-passports.index');
+    Route::post('/device-passports', [DevicePassportController::class, 'store'])->middleware('permission:device_passports.create')->name('device-passports.store');
+    Route::get('/device-passports/{device}', [DevicePassportController::class, 'show'])->middleware('permission:device_passports.view')->name('device-passports.show');
+    Route::patch('/device-passports/{device}', [DevicePassportController::class, 'update'])->middleware('permission:device_passports.update')->name('device-passports.update');
+    Route::get('/repairs/{repair}/inspection', [RepairInspectionController::class, 'create'])->middleware('permission:repair_inspections.view')->name('repairs.inspections.create');
+    Route::post('/repairs/{repair}/inspection', [RepairInspectionController::class, 'store'])->middleware('permission:repair_inspections.create')->name('repairs.inspections.store');
+    Route::get('/repairs/{repair}/inspection/receipt', [RepairInspectionController::class, 'receipt'])->middleware('permission:repair_inspections.view')->name('repairs.inspections.receipt');
+    Route::get('/repairs/{repair}/quotation', [RepairQuotationController::class, 'create'])->middleware('permission:repair_quotations.create')->name('repairs.quotations.create');
+    Route::post('/repairs/{repair}/quotation', [RepairQuotationController::class, 'store'])->middleware('permission:repair_quotations.create')->name('repairs.quotations.store');
+    Route::get('/repair-quotations/{quotation}', [RepairQuotationController::class, 'show'])->middleware('permission:repair_quotations.create')->name('repairs.quotations.show');
     Route::post('/products', [ProductController::class, 'store']);
     Route::patch('/products/{product}', [ProductController::class, 'update']);
     Route::get('/products/{product}/barcode', [ProductController::class, 'barcode'])->name('products.barcode');

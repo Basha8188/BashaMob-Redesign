@@ -23,4 +23,19 @@ class ProductSerial extends Model
     {
         return $this->belongsTo(Warehouse::class);
     }
+
+    public function purchaseItem()
+    {
+        return $this->belongsTo(PurchaseItem::class);
+    }
+
+    public function saleItem()
+    {
+        return $this->belongsTo(SaleItem::class);
+    }
+
+    public function device()
+    {
+        return $this->hasOne(CustomerDevice::class);
+    }
 }
