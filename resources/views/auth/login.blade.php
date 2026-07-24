@@ -1,6 +1,31 @@
 @extends('layouts.auth')
 @section('title','Sign In')
 @section('content')
+<div class="lamp-intro" data-lamp-intro role="dialog" aria-label="BashaMob lighting intro">
+    <button class="lamp-intro-skip" type="button" data-lamp-intro-skip>Skip intro</button>
+    <div class="lamp-room">
+        <div class="lamp-light-cone"></div>
+        <div class="floor-light"></div>
+        <div class="floor-shadow"></div>
+
+        <div class="floor-lamp">
+            <div class="lamp-shade"><span></span></div>
+            <div class="lamp-bulb"></div>
+            <div class="lamp-neck"></div>
+            <div class="lamp-pole"></div>
+            <div class="lamp-base"></div>
+            <div class="lamp-cord"><i></i></div>
+        </div>
+
+        <div class="lamp-person">
+            <div class="person-head"></div>
+            <div class="person-body"></div>
+            <div class="person-arm"><i class="person-hand"></i></div>
+            <div class="person-leg person-leg-one"></div>
+            <div class="person-leg person-leg-two"></div>
+        </div>
+    </div>
+</div>
 <main class="reference-login-page">
     <section class="reference-login-card">
         <header class="reference-login-heading">

@@ -5,6 +5,27 @@ import './admin-search';
 import './admin-crud';
 
 document.addEventListener('DOMContentLoaded', () => {
+    const lampIntro = document.querySelector('[data-lamp-intro]');
+    if (lampIntro) {
+        const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        let lampIntroTimer;
+        const finishLampIntro = () => {
+            window.clearTimeout(lampIntroTimer);
+            lampIntro.classList.add('is-finished');
+            document.body.classList.remove('lamp-intro-active');
+            window.setTimeout(() => lampIntro.remove(), reducedMotion ? 0 : 650);
+        };
+
+        if (reducedMotion) {
+            finishLampIntro();
+        } else {
+            document.body.classList.add('lamp-intro-active');
+            window.requestAnimationFrame(() => lampIntro.classList.add('is-playing'));
+            lampIntroTimer = window.setTimeout(finishLampIntro, 4100);
+            lampIntro.querySelector('[data-lamp-intro-skip]')?.addEventListener('click', finishLampIntro);
+        }
+    }
+
     const assistant = document.querySelector('[data-ai-assistant]');
     if (assistant) {
         const panel = assistant.querySelector('.ai-assistant-panel');
