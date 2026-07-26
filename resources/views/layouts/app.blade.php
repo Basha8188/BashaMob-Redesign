@@ -7,8 +7,10 @@
     <meta name="theme-color" content="#050b1e">
     <title>@yield('title', 'BashaMob') | باشا موب</title>
     <meta name="description" content="باشا موب لبيع وصيانة الهواتف والكمبيوتر والإكسسوارات">
-    <script>document.documentElement.dataset.theme=localStorage.getItem('basha-theme')||'dark';document.documentElement.dataset.palette='violet';</script>
-    @vite(['resources/css/app.css', 'resources/css/violet.css', 'resources/js/app.js'])
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <x-theme-bootstrap />
+    @vite(['resources/css/app.css', 'resources/css/violet.css', 'resources/js/storefront.js'])
 </head>
 <body class="storefront-body">
     <x-aurora-background variant="storefront" />

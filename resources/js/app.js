@@ -1,8 +1,6 @@
 import './bootstrap';
 import './background';
-import './admin-i18n';
-import './admin-search';
-import './admin-crud';
+import './theme-manager';
 
 document.addEventListener('DOMContentLoaded', () => {
     const lampIntro = document.querySelector('[data-lamp-intro]');
@@ -214,25 +212,9 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (error) { document.dispatchEvent(new CustomEvent('admin:toast', { detail: { message: error.message } })); button.disabled = false; }
     });
     const html = document.documentElement;
-    const themeToggles = [...document.querySelectorAll('.theme-toggle')];
     const nav = document.querySelector('.liquid-nav');
     const glow = document.querySelector('.nav-glow');
     const links = [...document.querySelectorAll('.nav-link')];
-
-    document.querySelectorAll('.theme-picker').forEach(picker => {
-        const button = picker.querySelector('.theme-picker-toggle');
-        button?.addEventListener('click', event => {
-            event.stopPropagation();
-            const open = picker.classList.toggle('is-open');
-            button.setAttribute('aria-expanded', String(open));
-        });
-        picker.querySelectorAll('[data-palette]').forEach(option => option.addEventListener('click', () => {
-            html.dataset.palette = option.dataset.palette;
-            localStorage.setItem('basha-palette', option.dataset.palette);
-            picker.classList.remove('is-open');
-        }));
-    });
-    document.addEventListener('click', () => document.querySelectorAll('.theme-picker.is-open').forEach(picker => picker.classList.remove('is-open')));
 
     const moveGlow = (link) => {
         if (!link || !glow || !nav) return;
@@ -246,21 +228,6 @@ document.addEventListener('DOMContentLoaded', () => {
     links.forEach(link => link.addEventListener('mouseenter', () => moveGlow(link)));
     nav?.addEventListener('mouseleave', () => moveGlow(active));
     window.addEventListener('resize', () => moveGlow(active));
-
-    const applyTheme = theme => {
-        html.dataset.theme = theme;
-        localStorage.setItem('basha-theme', theme);
-        themeToggles.forEach(button => {
-            button.setAttribute('aria-pressed', String(theme === 'dark'));
-            button.setAttribute('title', theme === 'dark' ? 'تفعيل الوضع الفاتح' : 'تفعيل الوضع الداكن');
-        });
-        document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme === 'dark' ? '#06030D' : '#F5F1FA');
-    };
-    applyTheme(html.dataset.theme === 'light' ? 'light' : 'dark');
-    themeToggles.forEach(toggle => toggle.addEventListener('click', () => {
-        const theme = html.dataset.theme === 'dark' ? 'light' : 'dark';
-        applyTheme(theme);
-    }));
 
     document.querySelectorAll('.password-toggle').forEach(button => {
         button.addEventListener('click', () => {

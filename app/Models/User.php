@@ -29,6 +29,9 @@ class User extends Authenticatable
         'last_login_at',
         'password_changed_at',
         'suspended_at',
+        'theme_name',
+        'theme_mode',
+        'use_system_mode',
         'password',
     ];
 
@@ -58,6 +61,7 @@ class User extends Authenticatable
             'last_login_at' => 'datetime',
             'password_changed_at' => 'datetime',
             'suspended_at' => 'datetime',
+            'use_system_mode' => 'boolean',
         ];
     }
 }

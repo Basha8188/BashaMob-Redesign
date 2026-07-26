@@ -1,0 +1,7 @@
+html[data-palette="default-violet"],
+html[data-palette="violet"] {
+    --theme-50:#faf8fd;--theme-100:#f2ecfa;--theme-200:#e5d9f5;--theme-300:#d2c3f6;
+    --theme-400:#b392e8;--theme-500:#8b5cf6;--theme-600:#7c3aed;--theme-700:#6842a5;
+    --theme-800:#4b2e83;--theme-900:#36255c;--theme-950:#211238;
+    --theme-dark:#36255c;--theme-light:#d2c3f6;
+}

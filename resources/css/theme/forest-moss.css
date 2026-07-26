@@ -1,0 +1,6 @@
+html[data-palette="forest-moss"] {
+    --theme-50:#f2f8f4;--theme-100:#dfede3;--theme-200:#bfdcc8;--theme-300:#9bc7a8;
+    --theme-400:#7fae8b;--theme-500:#5e9270;--theme-600:#47765b;--theme-700:#365e49;
+    --theme-800:#27463b;--theme-900:#203a31;--theme-950:#10221c;
+    --theme-dark:#27463b;--theme-light:#7fae8b;
+}

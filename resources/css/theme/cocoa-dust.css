@@ -1,0 +1,6 @@
+html[data-palette="cocoa-dust"] {
+    --theme-50:#faf6f2;--theme-100:#f0e5dc;--theme-200:#e2cfc0;--theme-300:#cdb6a1;
+    --theme-400:#b3927c;--theme-500:#96735f;--theme-600:#7c5c4b;--theme-700:#6e5143;
+    --theme-800:#644b3e;--theme-900:#4b372f;--theme-950:#2a1e19;
+    --theme-dark:#644b3e;--theme-light:#cdb6a1;
+}

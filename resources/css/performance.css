@@ -1,0 +1,73 @@
+/* Rendering-cost controls. Preserve glass at top-level surfaces, flatten repeated children. */
+.admin-body :is(
+    .dashboard-stats article,
+    .dashboard-shortcuts a,
+    .quick-modules a,
+    .setup-grid a,
+    .collection-card,
+    .admin-table-wrap,
+    .admin-table tr,
+    .admin-table td
+),
+.storefront-body :is(
+    .category-card,
+    .product-card,
+    .customer-pulse-grid article,
+    .feature-strip > *,
+    .floating-tag
+) {
+    -webkit-backdrop-filter:none!important;
+    backdrop-filter:none!important;
+}
+
+.admin-body :is(.dashboard-stats article,.dashboard-shortcuts a,.quick-modules a,.setup-grid a,.collection-card),
+.storefront-body :is(.category-card,.product-card,.customer-pulse-grid article) {
+    contain:layout paint style;
+}
+
+.storefront-body .site-main > .section,
+.storefront-body .products-grid,
+.storefront-body .two-column,
+.admin-body .dashboard-shortcuts {
+    content-visibility:auto;
+    contain-intrinsic-size:auto 520px;
+}
+
+.admin-body :is(.dashboard-stats article,.dashboard-shortcuts a,.quick-modules a,.setup-grid a),
+.storefront-body :is(.category-card,.product-card,.customer-pulse-grid article) {
+    background-color:rgba(31,18,57,.54);
+}
+
+html[data-theme="light"] .admin-body :is(.dashboard-stats article,.dashboard-shortcuts a,.quick-modules a,.setup-grid a),
+html[data-theme="light"] .storefront-body :is(.category-card,.product-card,.customer-pulse-grid article) {
+    background-color:rgba(247,242,255,.62);
+}
+
+@media (max-width:760px) {
+    .admin-body :is(.admin-panel,.module-panel,.dashboard-panel,.collection-card,.quick-modules a,.setup-grid a),
+    .storefront-body :is(.hero,.inner-hero,.steps-card,.glass-form,.product-card,.category-card,.customer-pulse-grid article),
+    .auth-body :is(.social-login-row button,.reference-field input) {
+        -webkit-backdrop-filter:none!important;
+        backdrop-filter:none!important;
+    }
+
+    .admin-body :is(.admin-panel,.module-panel,.dashboard-panel),
+    .storefront-body :is(.hero,.inner-hero,.steps-card,.glass-form) {
+        background-color:rgba(31,18,57,.7)!important;
+    }
+
+    html[data-theme="light"] .admin-body :is(.admin-panel,.module-panel,.dashboard-panel),
+    html[data-theme="light"] .storefront-body :is(.hero,.inner-hero,.steps-card,.glass-form) {
+        background-color:rgba(247,242,255,.78)!important;
+    }
+}
+
+@media (prefers-reduced-motion:reduce) {
+    html:focus-within { scroll-behavior:auto; }
+    .storefront-body *,
+    .admin-body *,
+    .auth-body * {
+        transition-duration:.01ms!important;
+        animation-iteration-count:1!important;
+    }
+}

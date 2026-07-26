@@ -30,6 +30,7 @@ use App\Http\Controllers\MaintenanceRequestController;
 use App\Http\Controllers\PublicDevicePassportController;
 use App\Http\Controllers\PublicMaintenancePortalController;
 use App\Http\Controllers\PublicRepairQuotationController;
+use App\Http\Controllers\ThemePreferenceController;
 use Illuminate\Support\Facades\Route;
 
 Route::view('/', 'pages.home')->name('home');
@@ -58,6 +59,7 @@ Route::middleware('guest')->group(function () {
     Route::post('/staff/recovery/reset', [StaffRecoveryController::class, 'reset'])->middleware('throttle:5,1')->name('staff.recovery.reset');
 });
 Route::post('/staff/logout', [StaffSessionController::class, 'destroy'])->middleware('auth')->name('staff.logout');
+Route::post('/theme-preference', [ThemePreferenceController::class, 'store'])->middleware(['auth', 'throttle:20,1'])->name('theme-preference.store');
 
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'staff'])->group(function () {
     Route::get('/', DashboardController::class)->middleware('permission:view-dashboard')->name('dashboard');

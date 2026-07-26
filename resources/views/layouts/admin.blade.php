@@ -4,9 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <title>@yield('title', 'الإدارة') | BashaMob</title>
-    <script>(()=>{const l=localStorage.getItem('basha-admin-language')||'ar';document.documentElement.lang=l;document.documentElement.dir=l==='ar'?'rtl':'ltr';document.documentElement.dataset.locale=l;document.documentElement.dataset.theme=localStorage.getItem('basha-theme')||'dark';document.documentElement.dataset.palette='violet';document.documentElement.dataset.adminUi='cosmic';if(localStorage.getItem('basha-sidebar')==='pinned'&&innerWidth>760)document.documentElement.classList.add('sidebar-pinned')})();</script>
-    @vite(['resources/css/app.css', 'resources/css/admin.css', 'resources/css/violet.css', 'resources/js/app.js'])
+    <script>(()=>{const l=localStorage.getItem('basha-admin-language')||'ar';document.documentElement.lang=l;document.documentElement.dir=l==='ar'?'rtl':'ltr';document.documentElement.dataset.locale=l;document.documentElement.dataset.adminUi='cosmic';if(localStorage.getItem('basha-sidebar')==='pinned'&&innerWidth>760)document.documentElement.classList.add('sidebar-pinned')})();</script>
+    <x-theme-bootstrap />
+    @vite(['resources/css/app.css', 'resources/css/admin.css', 'resources/css/violet.css', 'resources/js/admin.js'])
 </head>
 <body class="admin-body">
 <x-aurora-background variant="admin" />

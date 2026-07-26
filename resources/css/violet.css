@@ -5,3 +5,5 @@
 @import './animations.css';
 @import './responsive.css';
 @import './background.css';
+@import './performance.css';
+@import './theme/index.css';

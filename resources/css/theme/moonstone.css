@@ -1,0 +1,6 @@
+html[data-palette="moonstone"] {
+    --theme-50:#f7f9fa;--theme-100:#eef1f4;--theme-200:#d9e0e7;--theme-300:#bdc6cf;
+    --theme-400:#9da8b3;--theme-500:#838e99;--theme-600:#6b737d;--theme-700:#575e67;
+    --theme-800:#454b53;--theme-900:#343940;--theme-950:#1d2025;
+    --theme-dark:#6b737d;--theme-light:#d9e0e7;
+}
