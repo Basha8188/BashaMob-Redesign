@@ -1,0 +1,330 @@
+/*
+ * Final theme authority. Legacy bundles contain high-specificity violet/blue
+ * declarations, so this layer is loaded last and drives the complete UI.
+ */
+html[data-theme-name]{color-scheme:light dark;accent-color:var(--theme-primary);background:var(--theme-bg)}
+html[data-theme-name][data-theme="light"]{color-scheme:light}
+html[data-theme-name][data-theme="dark"]{color-scheme:dark}
+html[data-theme-name] body{color:var(--theme-text)!important;background-color:var(--theme-bg)!important}
+
+/* Admin semantic contract and depth. */
+html[data-admin-ui="cosmic"][data-theme-name][data-theme] body.admin-body{
+    --reference-bg:var(--theme-bg)!important;
+    --reference-panel:var(--theme-card)!important;
+    --reference-panel-strong:var(--theme-glass-bg-strong)!important;
+    --reference-border:var(--theme-border)!important;
+    --reference-muted:var(--theme-text-muted)!important;
+    --reference-text:var(--theme-text)!important;
+    --bm-page-bg:var(--theme-bg)!important;
+    --bm-bg:var(--theme-bg)!important;
+    --bm-bg-soft:var(--theme-bg-soft)!important;
+    --bm-sidebar:var(--theme-sidebar)!important;
+    --bm-topbar:var(--theme-topbar)!important;
+    --bm-surface:var(--theme-surface)!important;
+    --bm-surface-solid:var(--theme-surface-2)!important;
+    --bm-surface-hover:var(--theme-surface-hover)!important;
+    --bm-selected:var(--theme-surface-hover)!important;
+    --bm-primary:var(--theme-primary)!important;
+    --bm-primary-hover:var(--theme-primary-hover)!important;
+    --bm-secondary:var(--theme-secondary)!important;
+    --bm-accent:var(--theme-accent)!important;
+    --bm-text:var(--theme-text)!important;
+    --bm-text-secondary:var(--theme-text-muted)!important;
+    --bm-text-muted:var(--theme-text-soft)!important;
+    --bm-border:var(--theme-border)!important;
+    --bm-border-strong:var(--theme-border-strong)!important;
+    --glass-bg:var(--theme-glass-bg)!important;
+    --glass-bg-strong:var(--theme-glass-bg-strong)!important;
+    --glass-bg-soft:var(--theme-surface)!important;
+    --glass-border:var(--theme-glass-border)!important;
+    color:var(--theme-text)!important;
+    background:var(--theme-bg)!important
+}
+html[data-admin-ui="cosmic"][data-theme-name][data-theme] body.admin-body .admin-cosmic-bg{
+    opacity:1!important;
+    background:
+        radial-gradient(ellipse 62% 46% at 7% 90%,color-mix(in srgb,var(--theme-500) 28%,transparent),transparent 70%),
+        radial-gradient(ellipse 58% 42% at 94% 4%,color-mix(in srgb,var(--theme-300) 20%,transparent),transparent 72%),
+        linear-gradient(145deg,var(--theme-bg),var(--theme-bg-soft) 56%,var(--theme-bg))!important
+}
+html[data-admin-ui="cosmic"][data-theme-name][data-theme] body.admin-body .admin-cosmic-bg::before{
+    background:var(--theme-700)!important;opacity:.2!important;filter:blur(82px)!important
+}
+html[data-admin-ui="cosmic"][data-theme-name][data-theme] body.admin-body .admin-cosmic-bg::after{
+    background:var(--theme-300)!important;opacity:.13!important;filter:blur(90px)!important
+}
+html[data-admin-ui="cosmic"][data-theme-name][data-theme] body.admin-body .admin-cosmic-bg i,
+html[data-admin-ui="cosmic"][data-theme-name][data-theme] body.admin-body .admin-device-rain i,
+html[data-admin-ui="cosmic"][data-theme-name][data-theme] body.admin-body .admin-device-rain .falling-brand{
+    color:var(--theme-300)!important;background-color:var(--theme-500)!important;text-shadow:0 0 7px var(--theme-glow)!important
+}
+
+/* Blur only the two large shells. Repeated cards are composited without blur. */
+html[data-admin-ui="cosmic"][data-theme-name][data-theme] body.admin-body :is(.admin-sidebar.glass-panel,.admin-topbar.glass-panel){
+    color:var(--theme-text)!important;
+    border-color:var(--theme-glass-border)!important;
+    background:linear-gradient(145deg,var(--theme-glass-bg-strong),var(--theme-glass-bg))!important;
+    box-shadow:inset 0 1px var(--theme-glass-highlight),var(--theme-shadow-soft)!important;
+    -webkit-backdrop-filter:blur(14px) saturate(120%)!important;
+    backdrop-filter:blur(14px) saturate(120%)!important
+}
+html[data-admin-ui="cosmic"][data-theme-name][data-theme] body.admin-body :is(
+    .admin-panel,.module-panel,.dashboard-panel,.reference-notice,.collection-panel,
+    .violet-chart,.dashboard-feed,.pos-catalog,.pos-cart,.passport-search-panel,
+    .repair-receipt,.quick-modules a,.setup-grid a,.module-overview article
+){
+    color:var(--theme-text)!important;
+    border-color:var(--theme-border)!important;
+    background:linear-gradient(145deg,var(--theme-surface-2),var(--theme-surface))!important;
+    box-shadow:inset 0 1px var(--theme-glass-highlight),var(--theme-shadow-soft)!important;
+    -webkit-backdrop-filter:none!important;
+    backdrop-filter:none!important
+}
+html[data-admin-ui="cosmic"][data-theme-name][data-theme] body.admin-body .reference-stats :is(
+    article,.stat-cyan,.stat-pink,.stat-purple,.stat-gold,.stat-orange,.stat-violet,.stat-blue,.stat-amber
+){
+    color:var(--theme-text)!important;
+    border-color:var(--theme-border)!important;
+    background:
+        radial-gradient(circle at 8% 108%,color-mix(in srgb,var(--theme-primary) 18%,transparent),transparent 48%),
+        linear-gradient(145deg,var(--theme-surface-2),var(--theme-card))!important;
+    box-shadow:inset 0 1px var(--theme-glass-highlight),var(--theme-shadow-soft)!important;
+    -webkit-backdrop-filter:none!important;
+    backdrop-filter:none!important
+}
+html[data-admin-ui="cosmic"][data-theme-name][data-theme] body.admin-body .reference-stats article:nth-child(2n){
+    background:
+        radial-gradient(circle at 92% -5%,color-mix(in srgb,var(--theme-300) 14%,transparent),transparent 44%),
+        linear-gradient(145deg,var(--theme-surface-2),var(--theme-card))!important
+}
+html[data-admin-ui="cosmic"][data-theme-name][data-theme] body.admin-body .reference-stats article:hover{
+    border-color:var(--theme-border-strong)!important;
+    background:linear-gradient(145deg,var(--theme-surface-hover),var(--theme-surface-2))!important;
+    box-shadow:0 12px 28px var(--theme-glow),inset 0 1px var(--theme-glass-highlight)!important
+}
+
+/* Typography follows the selected palette contrast. */
+html[data-admin-ui="cosmic"][data-theme-name][data-theme] body.admin-body :is(
+    .reference-page-head h1,.admin-page-head h1,.panel-head h2,.violet-chart h2,
+    .dashboard-feed h2,.compact-panel-head h2,.reference-stats strong,.collection-card strong,
+    .collection-card b,.admin-logo,.admin-logo b,.sidebar-profile strong,.topbar-page b,.admin-user b
+){color:var(--theme-text)!important}
+html[data-admin-ui="cosmic"][data-theme-name][data-theme] body.admin-body :is(
+    .reference-page-head p,.admin-page-head p,.panel-head p,.violet-chart p,.compact-panel-head small,
+    .reference-stats .stat-label small,.collection-card small,.sidebar-profile small,.admin-logo small,
+    .sidebar-help small,.back-store,.topbar-page small,.topbar-clock small
+){color:var(--theme-text-muted)!important}
+html[data-admin-ui="cosmic"][data-theme-name][data-theme] body.admin-body :is(
+    .eyebrow,.panel-kicker,.blessing-line,.luminous-brand span,.reference-status
+){color:var(--theme-light)!important;text-shadow:0 0 12px var(--theme-glow)!important}
+html[data-admin-ui="cosmic"][data-theme-name][data-theme] body.admin-body .reference-status{
+    border-color:var(--theme-border)!important;background:color-mix(in srgb,var(--theme-primary) 10%,transparent)!important
+}
+
+/* Sidebar, identity and badges. */
+html[data-admin-ui="cosmic"][data-theme-name][data-theme] body.admin-body .admin-sidebar nav a{color:var(--theme-text-muted)!important}
+html[data-admin-ui="cosmic"][data-theme-name][data-theme] body.admin-body .admin-sidebar nav a:hover{
+    color:var(--theme-text)!important;border-color:var(--theme-border-soft)!important;background:var(--theme-surface-hover)!important
+}
+html[data-admin-ui="cosmic"][data-theme-name][data-theme] body.admin-body .admin-sidebar nav a.active{
+    color:var(--theme-text)!important;
+    border-color:var(--theme-border)!important;
+    background:linear-gradient(90deg,color-mix(in srgb,var(--theme-primary) 34%,transparent),var(--theme-surface))!important;
+    box-shadow:inset 3px 0 var(--theme-primary),0 8px 22px var(--theme-glow)!important
+}
+html[data-admin-ui="cosmic"][data-theme-name][data-theme] body.admin-body :is(.sidebar-avatar,.topbar-user-avatar,.user-avatar,.admin-logo .brand-mark,.brand-symbol){
+    color:var(--theme-text-inverse)!important;
+    border-color:var(--theme-border-strong)!important;
+    background:linear-gradient(145deg,var(--theme-400),var(--theme-900))!important;
+    box-shadow:0 7px 18px var(--theme-glow),inset 0 1px rgba(255,255,255,.22)!important
+}
+html[data-admin-ui="cosmic"][data-theme-name][data-theme] body.admin-body .user-avatar svg{
+    fill:color-mix(in srgb,var(--theme-light) 15%,transparent)!important
+}
+html[data-admin-ui="cosmic"][data-theme-name][data-theme] body.admin-body .user-avatar .avatar-shine{
+    stroke:var(--theme-light)!important;filter:drop-shadow(0 0 3px var(--theme-glow))!important
+}
+html[data-admin-ui="cosmic"][data-theme-name][data-theme] body.admin-body :is(.nav-count,.notification-count){
+    color:var(--theme-text-inverse)!important;
+    border-color:var(--theme-border-strong)!important;
+    background:linear-gradient(145deg,var(--theme-400),var(--theme-800))!important;
+    box-shadow:0 0 12px var(--theme-glow),inset 0 1px rgba(255,255,255,.24)!important
+}
+
+/* Search, controls, icons and forms. */
+html[data-admin-ui="cosmic"][data-theme-name][data-theme] body.admin-body :is(.topbar-search,.sidebar-search,.admin-search){
+    color:var(--theme-text)!important;border-color:var(--theme-border)!important;
+    background:color-mix(in srgb,var(--theme-bg) 42%,transparent)!important
+}
+html[data-admin-ui="cosmic"][data-theme-name][data-theme] body.admin-body :is(.topbar-search,.sidebar-search,.admin-search) input{
+    color:var(--theme-text)!important
+}
+html[data-admin-ui="cosmic"][data-theme-name][data-theme] body.admin-body :is(.search-orbit,.stat-icon,.page-title-with-icon>.admin-icon,.empty-admin>span,.product-image-placeholder){
+    color:var(--theme-light)!important;
+    border-color:var(--theme-border)!important;
+    background:color-mix(in srgb,var(--theme-primary) 14%,transparent)!important;
+    box-shadow:inset 0 1px var(--theme-glass-highlight),0 6px 16px var(--theme-glow)!important
+}
+html[data-admin-ui="cosmic"][data-theme-name][data-theme] body.admin-body .search-orbit::before{
+    background:conic-gradient(from 0deg,transparent 0 38%,var(--theme-primary) 50%,var(--theme-light) 60%,transparent 72%)!important;
+    filter:drop-shadow(0 0 4px var(--theme-glow))!important
+}
+html[data-admin-ui="cosmic"][data-theme-name][data-theme] body.admin-body .search-orbit::after{background:var(--theme-bg-soft)!important}
+html[data-admin-ui="cosmic"][data-theme-name][data-theme] body.admin-body :is(
+    .topbar-theme,.notification-button,.logout-button,.theme-picker-toggle,.language-toggle,.sidebar-toggle,.btn-glass
+){
+    color:var(--theme-light)!important;border-color:var(--theme-border)!important;background:var(--theme-surface)!important
+}
+html[data-admin-ui="cosmic"][data-theme-name][data-theme] body.admin-body :is(
+    .topbar-theme,.notification-button,.theme-picker-toggle,.language-toggle,.sidebar-toggle,.btn-glass
+):hover{
+    color:var(--theme-text)!important;border-color:var(--theme-border-strong)!important;background:var(--theme-surface-hover)!important;
+    box-shadow:0 0 0 3px color-mix(in srgb,var(--theme-primary) 9%,transparent),0 0 16px var(--theme-glow)!important
+}
+html[data-admin-ui="cosmic"][data-theme-name][data-theme] body.admin-body :is(input,select,textarea){
+    color:var(--theme-text)!important;border-color:var(--theme-border)!important;
+    background:color-mix(in srgb,var(--theme-bg) 50%,transparent)!important
+}
+html[data-admin-ui="cosmic"][data-theme-name][data-theme] body.admin-body :is(input,select,textarea):focus{
+    border-color:var(--theme-primary)!important;
+    box-shadow:0 0 0 3px color-mix(in srgb,var(--theme-primary) 16%,transparent)!important
+}
+
+/* Tables, menus and charts. */
+html[data-admin-ui="cosmic"][data-theme-name][data-theme] body.admin-body .admin-table-wrap{
+    border-color:var(--theme-border)!important;background:var(--theme-surface)!important
+}
+html[data-admin-ui="cosmic"][data-theme-name][data-theme] body.admin-body .admin-table th{
+    color:var(--theme-light)!important;background:color-mix(in srgb,var(--theme-primary) 12%,transparent)!important
+}
+html[data-admin-ui="cosmic"][data-theme-name][data-theme] body.admin-body .admin-table td{
+    color:var(--theme-text-muted)!important;background:color-mix(in srgb,var(--theme-bg) 25%,transparent)!important
+}
+html[data-admin-ui="cosmic"][data-theme-name][data-theme] body.admin-body .admin-table tbody tr:hover td{
+    color:var(--theme-text)!important;background:var(--theme-surface-hover)!important
+}
+html[data-admin-ui="cosmic"][data-theme-name][data-theme] body.admin-body :is(
+    .system-search-results,.notification-popover,.crud-dialog.glass-panel,.theme-palette
+){
+    color:var(--theme-text)!important;border-color:var(--theme-border)!important;
+    background:var(--theme-dropdown)!important;box-shadow:var(--theme-shadow)!important
+}
+html[data-admin-ui="cosmic"][data-theme-name][data-theme] body.admin-body :is(
+    .system-search-results button:hover,.system-search-results button.selected,.notification-items a:hover
+){background:var(--theme-surface-hover)!important}
+html[data-admin-ui="cosmic"][data-theme-name][data-theme] body.admin-body :is(
+    .system-search-results strong,.notification-popover header strong,.notification-items strong
+){color:var(--theme-text)!important}
+html[data-admin-ui="cosmic"][data-theme-name][data-theme] body.admin-body :is(
+    .system-search-results small,.notification-popover header small,.notification-items small
+){color:var(--theme-text-muted)!important}
+html[data-admin-ui="cosmic"][data-theme-name][data-theme] body.admin-body :is(
+    .system-search-results button>b,.notification-items time,.notification-popover header button
+){color:var(--theme-light)!important}
+html[data-admin-ui="cosmic"][data-theme-name][data-theme] body.admin-body :is(.chart-bars span,.sales-chart span i,.chart-legend i){
+    background:linear-gradient(180deg,var(--theme-light),var(--theme-primary))!important;box-shadow:0 0 9px var(--theme-glow)!important
+}
+
+/* Actions and AI share the active palette. */
+html[data-theme-name] body :is(.btn-primary,.reference-signin,.login-submit,.ai-assistant-trigger,.ai-action-confirm){
+    color:var(--theme-text-inverse)!important;
+    border-color:var(--theme-border)!important;
+    background:linear-gradient(135deg,var(--theme-800),var(--theme-400))!important;
+    box-shadow:0 10px 26px var(--theme-glow),inset 0 1px rgba(255,255,255,.2)!important
+}
+html[data-admin-ui="cosmic"][data-theme-name][data-theme] body.admin-body .ai-assistant-panel{
+    color:var(--theme-text)!important;border-color:var(--theme-border)!important;
+    background:var(--theme-modal)!important;box-shadow:var(--theme-shadow-strong)!important
+}
+html[data-admin-ui="cosmic"][data-theme-name][data-theme] body.admin-body .ai-assistant-messages p{
+    color:var(--theme-text)!important;background:color-mix(in srgb,var(--theme-primary) 13%,transparent)!important
+}
+html[data-admin-ui="cosmic"][data-theme-name][data-theme] body.admin-body .ai-assistant-messages .from-user{
+    background:color-mix(in srgb,var(--theme-light) 14%,transparent)!important
+}
+html[data-admin-ui="cosmic"][data-theme-name][data-theme] body.admin-body .ai-assistant-suggestions button{
+    color:var(--theme-text)!important;border-color:var(--theme-border)!important;background:var(--theme-surface)!important
+}
+html[data-admin-ui="cosmic"][data-theme-name][data-theme] body.admin-body .ai-assistant-panel form button{
+    background:linear-gradient(135deg,var(--theme-800),var(--theme-400))!important
+}
+
+/* Storefront, authentication and public portals. */
+html[data-theme-name] body.storefront-body :is(
+    .liquid-nav,.admin-entry,.hero,.inner-hero,.filter-bar,.product-card,.feature-strip,
+    .steps-card,.glass-form,.customer-portal-link,.category-card,.customer-pulse-grid article,
+    .hero-service-note,.device-card,.floating-tag,.service-banner
+),
+html[data-theme-name] body.auth-body :is(.reference-login-card,.recovery-dialog,.customer-request-card,.login-glass),
+html[data-theme-name] body .public-card{
+    color:var(--theme-text)!important;
+    border-color:var(--theme-glass-border)!important;
+    background:linear-gradient(145deg,var(--theme-glass-bg-strong),var(--theme-glass-bg))!important;
+    box-shadow:inset 0 1px var(--theme-glass-highlight),var(--theme-shadow-soft)!important
+}
+html[data-theme-name] body.storefront-body :is(
+    .hero-copy h1,.inner-hero h1,.section-head h2,.product-info h3,.product-info strong,
+    .customer-pulse-grid strong,.hero-service-note strong,.category-card strong,.brand
+){color:var(--theme-text)!important}
+html[data-theme-name] body.storefront-body :is(
+    .hero-copy p,.inner-hero p,.customer-pulse-grid small,.hero-service-note small,
+    .product-info small,.trust-row,.category-card small
+){color:var(--theme-text-muted)!important}
+html[data-theme-name] body.storefront-body :is(.eyebrow,.hero-copy h1 span,.brand b,.pulse-icon,.category-icon),
+html[data-theme-name] body.auth-body :is(.reference-login-options button,.reference-signup a,.recovery-icon){
+    color:var(--theme-light)!important;-webkit-text-fill-color:currentColor!important
+}
+html[data-theme-name] body.storefront-body :is(.brand-mark,.brand-symbol,.category-icon,.pulse-icon){
+    border-color:var(--theme-border)!important;
+    background:linear-gradient(145deg,var(--theme-400),var(--theme-900))!important;
+    box-shadow:0 8px 20px var(--theme-glow)!important
+}
+html[data-theme-name] body.storefront-body .phone-screen{
+    background:
+        radial-gradient(circle at 25% 25%,color-mix(in srgb,var(--theme-light) 72%,transparent),transparent 31%),
+        radial-gradient(circle at 80% 74%,color-mix(in srgb,var(--theme-primary) 60%,transparent),transparent 38%),
+        linear-gradient(145deg,var(--theme-900),var(--theme-500))!important
+}
+html[data-theme-name] body.auth-body :is(.login-logo>strong,.orbit-logo b){
+    color:transparent!important;
+    background:linear-gradient(90deg,var(--theme-light),var(--theme-primary),var(--theme-400))!important;
+    background-clip:text!important;-webkit-background-clip:text!important
+}
+html[data-theme-name] body.auth-body :is(.login-form>label>div,input,select,textarea),
+html[data-theme-name] body .public-card :is(input,select,textarea){
+    color:var(--theme-text)!important;border-color:var(--theme-border)!important;background:var(--theme-surface)!important
+}
+
+/* The picker follows the selected palette too. */
+html[data-theme-name] .theme-picker-toggle{
+    color:var(--theme-text)!important;border-color:var(--theme-border)!important;
+    background:var(--theme-glass-bg)!important;box-shadow:var(--theme-shadow-soft)!important
+}
+html[data-theme-name] .theme-picker-toggle>span{
+    background:linear-gradient(135deg,var(--theme-dark) 48%,var(--theme-light) 52%)!important;
+    box-shadow:0 0 10px var(--theme-glow)!important
+}
+html[data-theme-name] .theme-palette{
+    border-color:var(--theme-border)!important;background:var(--theme-dropdown)!important;box-shadow:var(--theme-shadow)!important
+}
+
+/* Fast, targeted transitions: never animate layout or large gradients. */
+html[data-theme-name] body,
+html[data-theme-name] :is(
+    .admin-sidebar,.admin-topbar,.admin-panel,.module-panel,.reference-stats article,
+    .liquid-nav,.product-card,.category-card,.reference-login-card,.ai-assistant-trigger
+){
+    transition:color .18s ease,border-color .18s ease,background-color .18s ease!important
+}
+@media(max-width:760px){
+    html[data-theme-name] body :is(
+        .admin-sidebar,.admin-topbar,.admin-panel,.module-panel,.reference-stats article,
+        .liquid-nav,.product-card,.category-card,.reference-login-card
+    ){-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+}
+@media(prefers-reduced-motion:reduce){
+    html[data-theme-name] *,html[data-theme-name] *::before,html[data-theme-name] *::after{
+        scroll-behavior:auto!important;transition-duration:.01ms!important;
+        animation-duration:.01ms!important;animation-iteration-count:1!important
+    }
+}

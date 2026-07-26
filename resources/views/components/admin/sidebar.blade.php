@@ -8,6 +8,14 @@
         @can('device_passports.view')<a class="{{ request()->routeIs('admin.device-passports.*') ? 'active' : '' }}" href="{{ route('admin.device-passports.index') }}" title="جواز سفر الجهاز"><x-admin-icon name="repairs"/><span class="sidebar-link-label">جواز سفر الجهاز</span></a>@endcan
         @foreach(['store'=>'بيانات المحل','products'=>'المنتجات والبضاعة','sales'=>'المبيعات','purchases'=>'المشتريات','inventory'=>'المخزن','repairs'=>'الصيانة','customers'=>'العملاء','suppliers'=>'الموردون','expenses'=>'المصروفات والخزنة','reports'=>'التقارير','team'=>'الموظفون والصلاحيات','settings'=>'الإعدادات'] as $key=>$label)
             <a class="{{ request()->route('module') === $key ? 'active' : '' }}" href="{{ route('admin.module', $key) }}" title="{{ $label }}"><x-admin-icon :name="$key"/><span class="sidebar-link-label">{{ $label }}</span>@if($key === 'customers')@php($pendingRequests = \App\Models\MaintenanceRequest::where('status', 'pending_review')->count() + (\Illuminate\Support\Facades\Schema::hasTable('customer_orders') ? \App\Models\CustomerOrder::where('status', 'pending_review')->count() : 0))<b class="nav-count" data-customer-request-badge data-server-count="{{ $pendingRequests }}" @if($pendingRequests < 1) hidden @endif>{{ $pendingRequests }}</b>@endif</a>
+            @if($key === 'reports')
+                @can('incentives.view')
+                    <a class="{{ request()->routeIs('admin.incentives.index', 'admin.incentives.plans.*', 'admin.incentives.periods.*', 'admin.incentives.employees.*') ? 'active' : '' }}" href="{{ route('admin.incentives.index') }}" title="الحوافز والعمولات"><x-admin-icon name="incentives"/><span class="sidebar-link-label">الحوافز والعمولات</span></a>
+                @endcan
+                @canany(['incentives.view_own', 'incentives.view_all_employees'])
+                    <a class="{{ request()->routeIs('admin.incentives.mine') ? 'active' : '' }}" href="{{ route('admin.incentives.mine') }}" title="حوافزي"><x-admin-icon name="commission"/><span class="sidebar-link-label">حوافزي</span></a>
+                @endcanany
+            @endif
         @endforeach
     </nav>
     <div class="sidebar-help"><span>؟</span><div><strong>تحتاج مساعدة؟</strong><small>فريق الدعم متاح الآن</small></div></div>

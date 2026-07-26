@@ -28,19 +28,21 @@
 .storefront-body .site-main > .section,
 .storefront-body .products-grid,
 .storefront-body .two-column,
-.admin-body .dashboard-shortcuts {
+.admin-body .dashboard-shortcuts,
+.admin-body .admin-content main > section:not(:first-child),
+.admin-body .admin-content main > .admin-panel:not(:first-child) {
     content-visibility:auto;
     contain-intrinsic-size:auto 520px;
 }
 
 .admin-body :is(.dashboard-stats article,.dashboard-shortcuts a,.quick-modules a,.setup-grid a),
 .storefront-body :is(.category-card,.product-card,.customer-pulse-grid article) {
-    background-color:rgba(31,18,57,.54);
+    background-color:var(--theme-card,rgba(31,18,57,.54));
 }
 
 html[data-theme="light"] .admin-body :is(.dashboard-stats article,.dashboard-shortcuts a,.quick-modules a,.setup-grid a),
 html[data-theme="light"] .storefront-body :is(.category-card,.product-card,.customer-pulse-grid article) {
-    background-color:rgba(247,242,255,.62);
+    background-color:var(--theme-card,rgba(247,242,255,.62));
 }
 
 @media (max-width:760px) {
@@ -53,12 +55,12 @@ html[data-theme="light"] .storefront-body :is(.category-card,.product-card,.cust
 
     .admin-body :is(.admin-panel,.module-panel,.dashboard-panel),
     .storefront-body :is(.hero,.inner-hero,.steps-card,.glass-form) {
-        background-color:rgba(31,18,57,.7)!important;
+        background-color:var(--theme-glass-bg-strong,rgba(31,18,57,.7))!important;
     }
 
     html[data-theme="light"] .admin-body :is(.admin-panel,.module-panel,.dashboard-panel),
     html[data-theme="light"] .storefront-body :is(.hero,.inner-hero,.steps-card,.glass-form) {
-        background-color:rgba(247,242,255,.78)!important;
+        background-color:var(--theme-glass-bg-strong,rgba(247,242,255,.78))!important;
     }
 }
 

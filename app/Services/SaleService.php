@@ -9,6 +9,7 @@ use App\Models\CashTransaction;
 use App\Models\ProductSerial;
 use App\Models\Sale;
 use App\Models\SaleReturn;
+use App\Models\WarehouseStock;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -28,6 +29,12 @@ class SaleService
             }
 
             foreach ($sale->items as $item) {
+                [$unitCost, $costSource] = $this->resolveUnitCost($sale, $item);
+                $item->update([
+                    'unit_cost_snapshot' => $unitCost,
+                    'cost_source' => $costSource,
+                ]);
+
                 if ($item->product_serial_id) {
                     $serial = ProductSerial::lockForUpdate()->findOrFail($item->product_serial_id);
                     if ($serial->status !== ProductSerialStatus::Available) {
@@ -39,7 +46,7 @@ class SaleService
                     $serial->update(['status' => ProductSerialStatus::Sold, 'sold_at' => now(), 'sale_item_id' => $item->id]);
                     $this->passports->syncSoldSerial($serial->fresh(), $sale);
                 }
-                $this->inventory->adjust($sale->warehouse, $item->product, -(float) $item->quantity, StockMovementType::Sale, $sale, $item->product_variant_id ? $item->product->variants()->find($item->product_variant_id) : null, $item->serial, (float) $item->unit_price);
+                $this->inventory->adjust($sale->warehouse, $item->product, -(float) $item->quantity, StockMovementType::Sale, $sale, $item->product_variant_id ? $item->product->variants()->find($item->product_variant_id) : null, $item->serial, (float) $unitCost);
             }
 
             foreach ($payments as $payment) {
@@ -68,7 +75,7 @@ class SaleService
                 throw ValidationException::withMessages(['sale' => 'لا يمكن إلغاء هذه الفاتورة.']);
             }
             foreach ($sale->items as $item) {
-                $this->inventory->adjust($sale->warehouse, $item->product, (float) $item->quantity, StockMovementType::SaleReturn, $sale, null, $item->serial, (float) $item->unit_price, 'عكس فاتورة ملغاة');
+                $this->inventory->adjust($sale->warehouse, $item->product, (float) $item->quantity, StockMovementType::SaleReturn, $sale, null, $item->serial, (float) ($item->unit_cost_snapshot ?? $item->product->purchase_price), 'عكس فاتورة ملغاة');
                 $item->serial?->update(['status' => ProductSerialStatus::Available, 'sold_at' => null, 'sale_item_id' => null]);
             }
             $sale->update(['status' => 'cancelled', 'cancelled_at' => now()]);
@@ -97,7 +104,7 @@ class SaleService
                 $total += $lineTotal;
                 $return->items()->create(['sale_item_id' => $item->id, 'quantity' => $quantity, 'unit_price' => $item->unit_price, 'total' => $lineTotal]);
                 $item->increment('returned_quantity', $quantity);
-                $this->inventory->adjust($sale->warehouse, $item->product, $quantity, StockMovementType::SaleReturn, $return, null, $item->serial, (float) $item->unit_price);
+                $this->inventory->adjust($sale->warehouse, $item->product, $quantity, StockMovementType::SaleReturn, $return, null, $item->serial, (float) ($item->unit_cost_snapshot ?? $item->product->purchase_price));
             }
             $return->update(['total' => $total]);
             ActivityLogger::record('sale.refunded', $return);
@@ -124,5 +131,34 @@ class SaleService
 
             return $sale->fresh('payments');
         });
+    }
+
+    private function resolveUnitCost(Sale $sale, $item): array
+    {
+        if ($item->serial?->purchase_cost !== null) {
+            return [(string) $item->serial->purchase_cost, 'serial_purchase_cost'];
+        }
+
+        $stockCost = WarehouseStock::query()
+            ->where('warehouse_id', $sale->warehouse_id)
+            ->where('product_id', $item->product_id)
+            ->when(
+                $item->product_variant_id,
+                fn ($query) => $query->where('product_variant_id', $item->product_variant_id),
+                fn ($query) => $query->whereNull('product_variant_id')
+            )
+            ->value('average_cost');
+        if ($stockCost !== null) {
+            return [(string) $stockCost, 'warehouse_average_cost'];
+        }
+
+        $variantCost = $item->product_variant_id
+            ? $item->product->variants()->whereKey($item->product_variant_id)->value('purchase_price')
+            : null;
+        if ($variantCost !== null) {
+            return [(string) $variantCost, 'variant_purchase_price'];
+        }
+
+        return [(string) ($item->product->purchase_price ?? 0), 'product_purchase_price'];
     }
 }

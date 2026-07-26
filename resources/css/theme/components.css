@@ -131,13 +131,23 @@ html:is([data-palette="forest-moss"],[data-palette="cocoa-dust"],[data-palette="
 }
 
 /* Compact visual-only selector: circles have accessible labels but no visible names. */
-.theme-picker{position:relative;z-index:170}
+.theme-picker{
+    position:relative;
+    z-index:170;
+    pointer-events:auto!important;
+    isolation:isolate;
+}
+.theme-picker.is-open{z-index:10120!important}
+.theme-picker-open .nav-wrap,
+.theme-picker-open body.admin-body .admin-topbar{z-index:10110!important;overflow:visible!important}
 .auth-body>.theme-picker,.public-portal>.theme-picker{position:fixed;left:22px;top:22px;z-index:10100}
 .theme-picker-toggle{
+    position:relative;z-index:2;
     width:40px;height:40px;padding:0;display:grid;place-items:center;cursor:pointer;
     border:1px solid var(--glass-border);border-radius:13px;
     background:var(--glass-bg);box-shadow:var(--glass-shadow);
     -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
+    pointer-events:auto!important;touch-action:manipulation;
 }
 .theme-picker-toggle>span{display:block;width:19px;height:19px;border-radius:50%}
 .theme-picker-toggle>span{background:linear-gradient(135deg,var(--theme-dark,#36255c) 48%,var(--theme-light,#d2c3f6) 52%)!important}
@@ -156,8 +166,10 @@ html:is([data-palette="forest-moss"],[data-palette="cocoa-dust"],[data-palette="
     -webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);
     opacity:0;visibility:hidden;transform:translateY(-6px);
     transition:opacity .2s,visibility .2s,transform .2s;
+    z-index:10130!important;
+    pointer-events:none!important;
 }
-.theme-picker.is-open .theme-palette{opacity:1;visibility:visible;transform:none}
+.theme-picker.is-open .theme-palette{opacity:1;visibility:visible;transform:none;pointer-events:auto!important}
 .theme-palette button{
     position:relative;
     width:34px!important;
@@ -168,9 +180,12 @@ html:is([data-palette="forest-moss"],[data-palette="cocoa-dust"],[data-palette="
     place-items:center!important;
     border:1px solid transparent!important;
     border-radius:50%!important;
+    cursor:pointer!important;
+    pointer-events:auto!important;
+    touch-action:manipulation;
 }
 .theme-palette button>span{display:none!important}
-.theme-palette button i{width:24px!important;height:24px!important;border-radius:50%!important;box-shadow:inset 0 1px rgba(255,255,255,.28),0 3px 9px rgba(0,0,0,.2)}
+.theme-palette button i{width:24px!important;height:24px!important;border-radius:50%!important;box-shadow:inset 0 1px rgba(255,255,255,.28),0 3px 9px rgba(0,0,0,.2);pointer-events:none!important}
 .theme-palette [data-palette="default-violet"] i{background:linear-gradient(135deg,#36255c 48%,#d2c3f6 52%)!important}
 .theme-palette [data-palette="forest-moss"] i{background:linear-gradient(135deg,#27463b 48%,#7fae8b 52%)!important}
 .theme-palette [data-palette="cocoa-dust"] i{background:linear-gradient(135deg,#644b3e 48%,#cdb6a1 52%)!important}
@@ -180,6 +195,17 @@ html:is([data-palette="forest-moss"],[data-palette="cocoa-dust"],[data-palette="
 
 @media(max-width:1000px){
     .storefront-body .liquid-nav>.theme-picker{display:block!important}
+}
+@media(max-width:760px){
+    /* Staff controls were hidden by the compact topbar rule. Keep the palette reachable. */
+    .admin-body .topbar-actions>.theme-picker{
+        display:block!important;
+        position:fixed!important;
+        left:14px!important;
+        right:auto!important;
+        top:72px!important;
+        z-index:10100!important;
+    }
 }
 @media(max-width:600px){
     .theme-palette{position:fixed!important;left:50%!important;right:auto!important;top:72px!important;transform:translate(-50%,-7px)!important}

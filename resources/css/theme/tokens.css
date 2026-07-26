@@ -14,10 +14,7 @@
     --theme-light:#d2c3f6;
 }
 
-html[data-palette="forest-moss"],
-html[data-palette="cocoa-dust"],
-html[data-palette="twilight-blue"],
-html[data-palette="moonstone"] {
+html[data-theme-name] {
     --theme-secondary:var(--theme-400);
     --theme-accent:var(--theme-300);
     --theme-text-inverse:#fff;
@@ -26,10 +23,7 @@ html[data-palette="moonstone"] {
     --theme-gradient-end:var(--theme-300);
 }
 
-html[data-palette="forest-moss"][data-theme="dark"],
-html[data-palette="cocoa-dust"][data-theme="dark"],
-html[data-palette="twilight-blue"][data-theme="dark"],
-html[data-palette="moonstone"][data-theme="dark"] {
+html[data-theme-name][data-theme="dark"] {
     --theme-primary:var(--theme-400);
     --theme-primary-hover:var(--theme-300);
     --theme-primary-active:var(--theme-500);
@@ -64,10 +58,7 @@ html[data-palette="moonstone"][data-theme="dark"] {
     --theme-aurora-3:var(--theme-300);
 }
 
-html[data-palette="forest-moss"][data-theme="light"],
-html[data-palette="cocoa-dust"][data-theme="light"],
-html[data-palette="twilight-blue"][data-theme="light"],
-html[data-palette="moonstone"][data-theme="light"] {
+html[data-theme-name][data-theme="light"] {
     --theme-primary:var(--theme-800);
     --theme-primary-hover:var(--theme-900);
     --theme-primary-active:var(--theme-700);

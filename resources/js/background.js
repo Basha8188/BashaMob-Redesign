@@ -4,8 +4,9 @@ const precisePointer = window.matchMedia('(hover: hover) and (pointer: fine)');
 const memory = Number(navigator.deviceMemory || 8);
 const cores = Number(navigator.hardwareConcurrency || 8);
 const saveData = navigator.connection?.saveData === true;
+const lowPerformance = memory <= 4 || cores <= 4 || saveData;
 
-if (memory <= 4 || cores <= 4 || saveData) root.dataset.auroraPerformance = 'low';
+if (lowPerformance) root.dataset.auroraPerformance = 'low';
 
 let frame = 0;
 let targetX = 0;
@@ -40,14 +41,16 @@ const resetPointer = () => {
 };
 
 if (document.querySelector('[data-aurora-background]')) {
-    window.addEventListener('pointermove', onPointerMove, { passive: true });
-    window.addEventListener('blur', resetPointer);
+    if (!lowPerformance && precisePointer.matches && !motionQuery.matches) {
+        window.addEventListener('pointermove', onPointerMove, { passive: true });
+        window.addEventListener('blur', resetPointer);
+    }
     document.addEventListener('visibilitychange', () => {
         root.dataset.auroraPaused = String(document.hidden);
         if (document.hidden && frame) {
             cancelAnimationFrame(frame);
             frame = 0;
-        } else if (!document.hidden) {
+        } else if (!document.hidden && !lowPerformance && precisePointer.matches && !motionQuery.matches) {
             resetPointer();
         }
     });

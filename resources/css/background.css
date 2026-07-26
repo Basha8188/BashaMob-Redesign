@@ -54,6 +54,7 @@ html[data-theme] body.auth-body {
         radial-gradient(ellipse 48% 34% at 76% 62%,rgba(75,46,131,.24),transparent 76%),
         linear-gradient(154deg,rgba(205,186,247,.05),transparent 38%,rgba(33,18,56,.16) 70%,transparent);
     animation:auroraMeshDrift 52s ease-in-out infinite alternate;
+    will-change:transform,opacity;
 }
 
 .aurora-background__ribbons { inset:-10%; }
@@ -66,6 +67,7 @@ html[data-theme] body.auth-body {
     opacity:var(--aurora-ribbon-opacity)!important;
     transform-origin:center;
     backface-visibility:hidden;
+    will-change:transform;
 }
 .aurora-background__ribbons i:nth-child(1) {
     top:8%;

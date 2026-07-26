@@ -64,4 +64,29 @@ class User extends Authenticatable
             'use_system_mode' => 'boolean',
         ];
     }
+
+    public function incentivePlanAssignments()
+    {
+        return $this->hasMany(IncentivePlanAssignment::class, 'employee_id');
+    }
+
+    public function sales()
+    {
+        return $this->hasMany(Sale::class, 'cashier_id');
+    }
+
+    public function createdSaleReturns()
+    {
+        return $this->hasMany(SaleReturn::class, 'created_by');
+    }
+
+    public function incentiveTransactions()
+    {
+        return $this->hasMany(IncentiveTransaction::class, 'employee_id');
+    }
+
+    public function incentiveSummaries()
+    {
+        return $this->hasMany(EmployeeIncentiveSummary::class, 'employee_id');
+    }
 }

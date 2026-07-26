@@ -9,6 +9,10 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\DevicePassportController;
 use App\Http\Controllers\Admin\ExpenseController;
 use App\Http\Controllers\Admin\InventoryController;
+use App\Http\Controllers\Admin\Incentives\EmployeeIncentiveController;
+use App\Http\Controllers\Admin\Incentives\IncentiveDashboardController;
+use App\Http\Controllers\Admin\Incentives\IncentivePeriodController;
+use App\Http\Controllers\Admin\Incentives\IncentivePlanController;
 use App\Http\Controllers\Admin\ModuleController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\PurchaseController;
@@ -116,5 +120,29 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'staff'])->group(fun
     Route::delete('/brands/{brand}', [BrandController::class, 'destroy']);
     Route::post('/warehouses', [WarehouseController::class, 'store']);
     Route::patch('/warehouses/{warehouse}', [WarehouseController::class, 'update']);
+    Route::prefix('incentives')->name('incentives.')->group(function () {
+        Route::get('/', IncentiveDashboardController::class)
+            ->middleware('permission:incentives.view')
+            ->name('index');
+        Route::post('/plans', [IncentivePlanController::class, 'store'])
+            ->middleware([
+                'permission:incentives.manage_plans',
+                'permission:incentives.manage_rules',
+            ])
+            ->name('plans.store');
+        Route::post('/periods', [IncentivePeriodController::class, 'store'])
+            ->middleware('permission:incentives.calculate')
+            ->name('periods.store');
+        Route::post('/periods/{period}/calculate', [IncentivePeriodController::class, 'calculate'])
+            ->middleware('permission:incentives.calculate')
+            ->name('periods.calculate');
+        Route::get('/me', [EmployeeIncentiveController::class, 'mine'])
+            ->middleware('permission:incentives.view_own|incentives.view_all_employees')
+            ->name('mine');
+        Route::get('/employees/{employee}', [EmployeeIncentiveController::class, 'show'])
+            ->whereNumber('employee')
+            ->middleware('permission:incentives.view_all_employees')
+            ->name('employees.show');
+    });
     Route::get('/{module}', ModuleController::class)->middleware('module.permission')->name('module');
 });

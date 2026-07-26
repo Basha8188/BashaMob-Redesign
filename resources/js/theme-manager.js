@@ -2,6 +2,7 @@ const THEMES = ['default-violet', 'forest-moss', 'cocoa-dust', 'twilight-blue', 
 const MODES = ['light', 'dark', 'system'];
 const root = document.documentElement;
 const systemDark = window.matchMedia('(prefers-color-scheme: dark)');
+const paletteOptionSelector = '.theme-palette button[data-palette]';
 let saveTimer;
 
 const validTheme = value => THEMES.includes(value) ? value : 'default-violet';
@@ -9,7 +10,7 @@ const validMode = value => MODES.includes(value) ? value : 'dark';
 const resolvedMode = mode => mode === 'system' ? (systemDark.matches ? 'dark' : 'light') : mode;
 
 const syncControls = () => {
-    document.querySelectorAll('[data-palette]').forEach(button => {
+    document.querySelectorAll(paletteOptionSelector).forEach(button => {
         button.setAttribute('aria-pressed', String(button.dataset.palette === root.dataset.themeName));
     });
     document.querySelectorAll('.theme-toggle').forEach(button => {
@@ -72,35 +73,76 @@ const applyMode = (mode, persist = true) => {
     notifyThemeChanged();
 };
 
+const closePicker = picker => {
+    if (!picker) return;
+    picker.classList.remove('is-open');
+    picker.querySelector('.theme-picker-toggle')?.setAttribute('aria-expanded', 'false');
+
+    if (!document.querySelector('.theme-picker.is-open')) {
+        root.classList.remove('theme-picker-open');
+    }
+};
+
+const closeAllPickers = except => {
+    document.querySelectorAll('.theme-picker.is-open').forEach(picker => {
+        if (picker !== except) closePicker(picker);
+    });
+};
+
 const initializeThemeControls = () => {
+    if (root.dataset.themeControlsReady === 'true') {
+        syncControls();
+        return;
+    }
+    root.dataset.themeControlsReady = 'true';
+
     applyPalette(root.dataset.themeName || root.dataset.palette, false);
     applyMode(root.dataset.mode || root.dataset.theme, false);
 
-    document.querySelectorAll('.theme-picker').forEach(picker => {
-        const toggle = picker.querySelector('.theme-picker-toggle');
-        toggle?.addEventListener('click', event => {
+    /*
+     * Delegate from the document so the picker keeps working in every staff,
+     * storefront and public view, including controls rendered after page load.
+     */
+    document.addEventListener('click', event => {
+        const target = event.target instanceof Element ? event.target : null;
+        const toggle = target?.closest('.theme-picker-toggle');
+
+        if (toggle) {
+            const picker = toggle.closest('.theme-picker');
+            if (!picker) return;
+            event.preventDefault();
             event.stopPropagation();
+            closeAllPickers(picker);
             const open = picker.classList.toggle('is-open');
             toggle.setAttribute('aria-expanded', String(open));
-        });
-        picker.addEventListener('click', event => {
-            const option = event.target.closest('[data-palette]');
-            if (!option) return;
+            root.classList.toggle('theme-picker-open', open);
+            return;
+        }
+
+        const option = target?.closest(paletteOptionSelector);
+        if (option) {
+            event.preventDefault();
+            event.stopPropagation();
             applyPalette(option.dataset.palette);
-            picker.classList.remove('is-open');
-            toggle?.setAttribute('aria-expanded', 'false');
-        });
+            const picker = option.closest('.theme-picker');
+            closePicker(picker);
+            picker?.querySelector('.theme-picker-toggle')?.focus({ preventScroll: true });
+            return;
+        }
+
+        closeAllPickers();
     });
 
     document.querySelectorAll('.theme-toggle').forEach(toggle => {
         toggle.addEventListener('click', () => applyMode(root.dataset.theme === 'dark' ? 'light' : 'dark'));
     });
 
-    document.addEventListener('click', () => {
-        document.querySelectorAll('.theme-picker.is-open').forEach(picker => {
-            picker.classList.remove('is-open');
-            picker.querySelector('.theme-picker-toggle')?.setAttribute('aria-expanded', 'false');
-        });
+    document.addEventListener('keydown', event => {
+        if (event.key !== 'Escape') return;
+        const openPicker = document.querySelector('.theme-picker.is-open');
+        if (!openPicker) return;
+        closePicker(openPicker);
+        openPicker.querySelector('.theme-picker-toggle')?.focus({ preventScroll: true });
     });
 };
 

@@ -1,4 +1,4 @@
-html:is([data-palette="forest-moss"],[data-palette="cocoa-dust"],[data-palette="twilight-blue"],[data-palette="moonstone"]) {
+html[data-theme-name] {
     --primary:var(--theme-primary);
     --primary-color:var(--theme-primary);
     --accent-color:var(--theme-accent);
@@ -46,6 +46,20 @@ html:is([data-palette="forest-moss"],[data-palette="cocoa-dust"],[data-palette="
     --bm-glass-border:var(--theme-glass-border);
     --bm-focus:0 0 0 4px color-mix(in srgb,var(--theme-primary) 17%,transparent);
     --bm-icon-glow:0 0 15px var(--theme-glow);
+    --reference-bg:var(--theme-bg);
+    --reference-panel:var(--theme-card);
+    --reference-panel-strong:var(--theme-glass-bg-strong);
+    --reference-border:var(--theme-border);
+    --reference-muted:var(--theme-text-muted);
+    --reference-text:var(--theme-text);
+    --surface:var(--theme-surface);
+    --surface-solid:var(--theme-surface-2);
+    --muted:var(--theme-text-muted);
+    --text:var(--theme-text);
+    --border:var(--theme-border);
+    --shadow:var(--theme-shadow);
+    --primary-2:var(--theme-secondary);
+    --link:var(--theme-primary);
 
     --bg-primary:var(--theme-bg);
     --bg-secondary:var(--theme-bg-soft);

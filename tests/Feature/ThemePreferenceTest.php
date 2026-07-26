@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\User;
+use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -65,5 +66,70 @@ class ThemePreferenceTest extends TestCase
         foreach (['default-violet', 'forest-moss', 'cocoa-dust', 'twilight-blue', 'moonstone'] as $theme) {
             $response->assertSee('data-palette="'.$theme.'"', false);
         }
+    }
+
+    public function test_palette_picker_is_available_on_storefront_login_and_staff_screens(): void
+    {
+        $themes = ['default-violet', 'forest-moss', 'cocoa-dust', 'twilight-blue', 'moonstone'];
+
+        foreach ([route('home'), route('staff.login')] as $url) {
+            $response = $this->get($url)->assertOk();
+            $response->assertSee('class="theme-picker', false);
+            foreach ($themes as $theme) {
+                $response->assertSee('data-palette="'.$theme.'"', false);
+            }
+        }
+
+        $this->seed(RolePermissionSeeder::class);
+        $staff = User::factory()->create();
+        $staff->assignRole('Owner');
+        $response = $this->actingAs($staff)->get(route('admin.dashboard'))->assertOk();
+        $response->assertSee('admin-palette-picker', false);
+        foreach ($themes as $theme) {
+            $response->assertSee('data-palette="'.$theme.'"', false);
+        }
+    }
+
+    public function test_palette_picker_has_a_clickable_layer_and_delegated_interaction_contract(): void
+    {
+        $manager = file_get_contents(resource_path('js/theme-manager.js'));
+        $styles = file_get_contents(resource_path('css/theme/components.css'));
+
+        $this->assertStringContainsString(".theme-palette button[data-palette]", $manager);
+        $this->assertStringContainsString("document.addEventListener('click'", $manager);
+        $this->assertStringContainsString("root.classList.toggle('theme-picker-open'", $manager);
+        $this->assertStringContainsString('.theme-picker.is-open .theme-palette', $styles);
+        $this->assertStringContainsString('pointer-events:auto!important', $styles);
+        $this->assertStringContainsString('.admin-body .topbar-actions>.theme-picker', $styles);
+    }
+
+    public function test_unified_theme_layer_is_loaded_last_and_covers_the_complete_interface(): void
+    {
+        $index = file_get_contents(resource_path('css/theme/index.css'));
+        $unified = file_get_contents(resource_path('css/theme/system-unified.css'));
+
+        $this->assertStringContainsString("@import './system-unified.css';", $index);
+        $this->assertGreaterThan(
+            strpos($index, "@import './components.css';"),
+            strpos($index, "@import './system-unified.css';")
+        );
+
+        foreach ([
+            '.admin-sidebar.glass-panel',
+            '.admin-topbar.glass-panel',
+            '.reference-stats',
+            '.admin-table',
+            '.system-search-results',
+            '.ai-assistant-panel',
+            'body.storefront-body',
+            'body.auth-body',
+            '.public-card',
+        ] as $component) {
+            $this->assertStringContainsString($component, $unified);
+        }
+
+        $this->assertStringContainsString('var(--theme-primary)', $unified);
+        $this->assertStringContainsString('var(--theme-surface', $unified);
+        $this->assertStringContainsString('backdrop-filter:none!important', $unified);
     }
 }

@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call(RolePermissionSeeder::class);
+        $this->call(IncentivePermissionSeeder::class);
 
         $owner = User::updateOrCreate(['email' => env('OWNER_EMAIL', 'admin@bashamob.local')], [
             'name' => 'BashaMob Owner',
