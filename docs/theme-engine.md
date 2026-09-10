@@ -15,7 +15,10 @@ The engine keeps the established attributes compatible:
 
 | Slug | Dark | Light |
 |---|---|---|
+| `liquid-cosmos` | Deep cosmic violet with cyan refraction | Airy violet glass with cyan highlights |
 | `default-violet` | Existing Basha Violet values | Existing Basha Violet values |
+| `lavender` | Preserved legacy lavender | Preserved legacy lavender |
+| `plum` | Preserved legacy plum with warm accent | Preserved legacy plum with warm accent |
 | `forest-moss` | `#27463B` | `#7FAE8B` |
 | `cocoa-dust` | `#644B3E` | `#CDB6A1` |
 | `twilight-blue` | `#203B5C` | `#84B6E4` |
@@ -40,11 +43,11 @@ Semantic success, warning, danger, and informational colors are not replaced.
 
 Migration `2026_07_26_000001_add_theme_preferences_to_users_table` adds:
 
-- `theme_name`, default `default-violet`
+- `theme_name`, default `liquid-cosmos`
 - `theme_mode`, default `dark`
 - `use_system_mode`, default `false`
 
-Guests use LocalStorage. Authenticated users use LocalStorage for immediate rendering and asynchronously persist to `/theme-preference`. Unknown values fall back to `default-violet`. The old `basha-theme` light/dark key is retained and read; legacy `basha-palette=violet` is migrated logically without deleting it.
+Guests use LocalStorage. Authenticated users use LocalStorage for immediate rendering and asynchronously persist to `/theme-preference`. Unknown values fall back to `liquid-cosmos`. The old `basha-theme` light/dark key is retained and read; legacy `basha-palette=violet`, `lavender`, and `plum` preferences remain supported.
 
 Theme changes happen without refresh and emit:
 
@@ -56,12 +59,12 @@ window.addEventListener('bashamob:theme-changed', event => {
 
 ## Selector UI
 
-The shared Blade picker is present in storefront navigation, authentication, administration, and signed public portal pages. It displays five visual circles only. Theme names exist only as accessibility labels and are not rendered beside the colors.
+The shared Blade picker is present in storefront navigation, authentication, administration, and signed public portal pages. It displays eight visual circles only. Theme names exist only as accessibility labels and are not rendered beside the colors.
 
 ## Verification
 
 - `npm run build`: passed.
 - `php artisan migrate --force`: passed.
 - `php artisan test`: 55 tests, 279 assertions, zero failures.
-- Home and login HTML responses contain all five options and no visible theme-name text.
+- Home and login HTML responses contain all eight options and no visible theme-name text.
 - Automated browser screenshots were unavailable because the connected browser runtime failed to initialize in the Windows sandbox.

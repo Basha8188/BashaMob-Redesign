@@ -120,6 +120,6 @@ class InventoryBusinessRulesTest extends TestCase
 
         $this->assertDatabaseHas('repair_status_history', ['repair_ticket_id' => $ticket->id, 'to_status' => 'diagnosing']);
         $this->assertDatabaseHas('repair_parts', ['repair_ticket_id' => $ticket->id, 'product_id' => $this->product->id]);
-        $this->assertSame('1.000',WarehouseStock::first()->quantity);
+        $this->assertSame('1.000', WarehouseStock::first()->quantity);
     }
 }

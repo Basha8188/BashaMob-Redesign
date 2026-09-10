@@ -32,7 +32,7 @@ class SaleController extends Controller
                 $sale = $this->sales->finalize($sale, (float) ($d['paid_amount'] ?? 0) > 0 ? [['amount' => $d['paid_amount'], 'method' => 'cash']] : []);
             }
 
-return response()->json(['message' => 'تم إنشاء فاتورة البيع وحفظها فعليًا.', 'row' => $this->row($sale)], 201);
+            return response()->json(['message' => 'تم إنشاء فاتورة البيع وحفظها فعليًا.', 'row' => $this->row($sale)], 201);
         });
     }
 
@@ -45,7 +45,7 @@ return response()->json(['message' => 'تم إنشاء فاتورة البيع �
             $this->sales->cancel($sale);
         }
 
-return response()->json(['message' => 'تم إلغاء الفاتورة وعكس المخزون إن كان قد خُصم.']);
+        return response()->json(['message' => 'تم إلغاء الفاتورة وعكس المخزون إن كان قد خُصم.']);
     }
 
     public function pay(Request $r, Sale $sale): JsonResponse
@@ -69,6 +69,6 @@ return response()->json(['message' => 'تم إلغاء الفاتورة وعكس
     {
         $s->load('customer');
 
-        return ['id' => $s->id, 'cells' => [$s->invoice_number, $s->customer?->name ?? 'عميل نقدي', $s->created_at->format('Y-m-d'), number_format((float) $s->total,2), $s->status]];
+        return ['id' => $s->id, 'cells' => [$s->invoice_number, $s->customer?->name ?? 'عميل نقدي', $s->created_at->format('Y-m-d'), number_format((float) $s->total, 2), $s->status]];
     }
 }

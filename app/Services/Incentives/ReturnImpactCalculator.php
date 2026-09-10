@@ -13,15 +13,15 @@ class ReturnImpactCalculator
         IncentiveRule $rule,
         IncentiveTransaction $original,
         string $eligibleReturnRatio,
-    ): string
-    {
+    ): string {
         if ($rule->return_impact_mode === 'ignore') {
             return '0.0000';
         }
 
-        $ratio = BigDecimal::of($eligibleReturnRatio)
-            ->max(BigDecimal::zero())
-            ->min(BigDecimal::one());
+        $ratio = BigDecimal::min(
+            BigDecimal::max(BigDecimal::of($eligibleReturnRatio), BigDecimal::zero()),
+            BigDecimal::one()
+        );
         $impact = BigDecimal::of($original->calculated_amount)->multipliedBy($ratio);
 
         if ($rule->return_impact_mode === 'reverse_percentage') {

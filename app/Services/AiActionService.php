@@ -153,8 +153,7 @@ class AiActionService
             return $this->failure($locale, "لم أجد منتجًا مطابقًا لـ «{$query}». اكتب اسمًا أدق أو كود SKU.", "I could not find a product matching “{$query}”. Use a more specific name or SKU.");
         }
 
-        $exact = $matches->filter(fn (Product $product) =>
-            strcasecmp($product->sku, $query) === 0
+        $exact = $matches->filter(fn (Product $product) => strcasecmp($product->sku, $query) === 0
             || ($product->barcode && strcasecmp($product->barcode, $query) === 0)
             || strcasecmp($product->name, $query) === 0
         );

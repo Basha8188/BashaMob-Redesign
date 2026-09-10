@@ -13,7 +13,10 @@ class ThemePreferenceController extends Controller
     {
         $data = $request->validate([
             'theme_name' => ['required', Rule::in([
+                'liquid-cosmos',
                 'default-violet',
+                'lavender',
+                'plum',
                 'forest-moss',
                 'cocoa-dust',
                 'twilight-blue',

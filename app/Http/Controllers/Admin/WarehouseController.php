@@ -19,7 +19,7 @@ class WarehouseController extends Controller
                 Warehouse::where('is_default', true)->update(['is_default' => false]);
             }
 
-return Warehouse::create($d);
+            return Warehouse::create($d);
         });
 
         return response()->json($w, 201);

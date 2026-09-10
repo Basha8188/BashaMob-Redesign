@@ -8,7 +8,6 @@ use App\Models\MaintenanceRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rules\File;
 
 class MaintenanceRequestController extends Controller

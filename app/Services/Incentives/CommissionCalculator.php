@@ -19,7 +19,7 @@ class CommissionCalculator
         }
 
         $eligible = $rule->maximum_eligible_basis !== null
-            ? $basis->min(BigDecimal::of($rule->maximum_eligible_basis))
+            ? BigDecimal::min($basis, BigDecimal::of($rule->maximum_eligible_basis))
             : $basis;
 
         $amount = match ($rule->calculation_method) {
@@ -34,10 +34,10 @@ class CommissionCalculator
         };
 
         if ($rule->minimum_commission !== null) {
-            $amount = $amount->max(BigDecimal::of($rule->minimum_commission));
+            $amount = BigDecimal::max($amount, BigDecimal::of($rule->minimum_commission));
         }
         if ($rule->maximum_commission !== null) {
-            $amount = $amount->min(BigDecimal::of($rule->maximum_commission));
+            $amount = BigDecimal::min($amount, BigDecimal::of($rule->maximum_commission));
         }
 
         return [

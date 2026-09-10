@@ -1,0 +1,16 @@
+html[data-palette="plum"] {
+    --theme-50:#faf7fa;
+    --theme-100:#f3edf4;
+    --theme-200:#e7dce9;
+    --theme-300:#d4c0d7;
+    --theme-400:#b89cbd;
+    --theme-500:#96759b;
+    --theme-600:#755c7d;
+    --theme-700:#644e6b;
+    --theme-800:#57435d;
+    --theme-900:#443448;
+    --theme-950:#2a1f2d;
+    --theme-dark:#57435d;
+    --theme-light:#d4c0d7;
+    --theme-accent:#c69b72;
+}

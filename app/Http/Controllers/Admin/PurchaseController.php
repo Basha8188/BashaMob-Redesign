@@ -34,7 +34,7 @@ class PurchaseController extends Controller
                 $purchase = $this->service->receive($purchase);
             }
 
-return response()->json(['message' => 'تم إنشاء فاتورة الشراء.', 'row' => $this->row($purchase)], 201);
+            return response()->json(['message' => 'تم إنشاء فاتورة الشراء.', 'row' => $this->row($purchase)], 201);
         });
     }
 

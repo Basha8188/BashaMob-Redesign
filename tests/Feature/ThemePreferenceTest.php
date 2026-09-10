@@ -11,11 +11,11 @@ class ThemePreferenceTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_existing_and_new_users_receive_the_original_violet_theme_by_default(): void
+    public function test_new_users_receive_the_liquid_cosmos_theme_by_default(): void
     {
         $user = User::factory()->create()->refresh();
 
-        $this->assertSame('default-violet', $user->theme_name);
+        $this->assertSame('liquid-cosmos', $user->theme_name);
         $this->assertSame('dark', $user->theme_mode);
         $this->assertFalse($user->use_system_mode);
     }
@@ -36,6 +36,19 @@ class ThemePreferenceTest extends TestCase
             'theme_mode' => 'light',
             'use_system_mode' => false,
         ]);
+    }
+
+    public function test_liquid_and_legacy_theme_preferences_are_accepted(): void
+    {
+        $user = User::factory()->create();
+
+        foreach (['liquid-cosmos', 'lavender', 'plum'] as $theme) {
+            $this->actingAs($user)->postJson(route('theme-preference.store'), [
+                'theme_name' => $theme,
+                'theme_mode' => 'dark',
+                'use_system_mode' => false,
+            ])->assertOk()->assertJsonPath('theme.theme_name', $theme);
+        }
     }
 
     public function test_system_mode_is_saved_and_invalid_themes_are_rejected(): void
@@ -59,18 +72,18 @@ class ThemePreferenceTest extends TestCase
         $this->assertSame('moonstone', $user->fresh()->theme_name);
     }
 
-    public function test_login_page_contains_all_five_visual_theme_options(): void
+    public function test_login_page_contains_the_liquid_theme_and_all_preserved_theme_options(): void
     {
         $response = $this->get(route('staff.login'))->assertOk();
 
-        foreach (['default-violet', 'forest-moss', 'cocoa-dust', 'twilight-blue', 'moonstone'] as $theme) {
+        foreach (['liquid-cosmos', 'default-violet', 'lavender', 'plum', 'forest-moss', 'cocoa-dust', 'twilight-blue', 'moonstone'] as $theme) {
             $response->assertSee('data-palette="'.$theme.'"', false);
         }
     }
 
     public function test_palette_picker_is_available_on_storefront_login_and_staff_screens(): void
     {
-        $themes = ['default-violet', 'forest-moss', 'cocoa-dust', 'twilight-blue', 'moonstone'];
+        $themes = ['liquid-cosmos', 'default-violet', 'lavender', 'plum', 'forest-moss', 'cocoa-dust', 'twilight-blue', 'moonstone'];
 
         foreach ([route('home'), route('staff.login')] as $url) {
             $response = $this->get($url)->assertOk();
@@ -95,7 +108,7 @@ class ThemePreferenceTest extends TestCase
         $manager = file_get_contents(resource_path('js/theme-manager.js'));
         $styles = file_get_contents(resource_path('css/theme/components.css'));
 
-        $this->assertStringContainsString(".theme-palette button[data-palette]", $manager);
+        $this->assertStringContainsString('.theme-palette button[data-palette]', $manager);
         $this->assertStringContainsString("document.addEventListener('click'", $manager);
         $this->assertStringContainsString("root.classList.toggle('theme-picker-open'", $manager);
         $this->assertStringContainsString('.theme-picker.is-open .theme-palette', $styles);

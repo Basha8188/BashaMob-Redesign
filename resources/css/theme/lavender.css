@@ -1,0 +1,15 @@
+html[data-palette="lavender"] {
+    --theme-50:#fbf9fe;
+    --theme-100:#f5f0fc;
+    --theme-200:#e9e1f8;
+    --theme-300:#d8caf5;
+    --theme-400:#c0aae5;
+    --theme-500:#a48bd3;
+    --theme-600:#8b70ba;
+    --theme-700:#72579a;
+    --theme-800:#594477;
+    --theme-900:#44345b;
+    --theme-950:#291e39;
+    --theme-dark:#44345b;
+    --theme-light:#e9e1f8;
+}

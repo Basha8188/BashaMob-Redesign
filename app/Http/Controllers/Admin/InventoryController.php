@@ -27,6 +27,6 @@ class InventoryController extends Controller
             $this->inventory->adjust($warehouse, $product, $diff, $diff > 0 ? StockMovementType::AdjustmentIn : StockMovementType::AdjustmentOut, $product);
         }
 
-return response()->json(['message' => 'تم ضبط المخزون وتسجيل الحركة.', 'row' => ['id' => WarehouseStock::where('warehouse_id', $warehouse->id)->where('product_id', $product->id)->value('id'), 'cells' => [$warehouse->name, $product->name, number_format((float) $d['stock'], 3), $d['minimum'], (float) $d['stock'] <= $d['minimum'] ? 'منخفض' : 'متوفر']]], 201);
+        return response()->json(['message' => 'تم ضبط المخزون وتسجيل الحركة.', 'row' => ['id' => WarehouseStock::where('warehouse_id', $warehouse->id)->where('product_id', $product->id)->value('id'), 'cells' => [$warehouse->name, $product->name, number_format((float) $d['stock'], 3), $d['minimum'], (float) $d['stock'] <= $d['minimum'] ? 'منخفض' : 'متوفر']]], 201);
     }
 }

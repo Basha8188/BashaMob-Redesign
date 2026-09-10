@@ -1,11 +1,11 @@
-const THEMES = ['default-violet', 'forest-moss', 'cocoa-dust', 'twilight-blue', 'moonstone'];
+const THEMES = ['liquid-cosmos', 'default-violet', 'lavender', 'plum', 'forest-moss', 'cocoa-dust', 'twilight-blue', 'moonstone'];
 const MODES = ['light', 'dark', 'system'];
 const root = document.documentElement;
 const systemDark = window.matchMedia('(prefers-color-scheme: dark)');
 const paletteOptionSelector = '.theme-palette button[data-palette]';
 let saveTimer;
 
-const validTheme = value => THEMES.includes(value) ? value : 'default-violet';
+const validTheme = value => THEMES.includes(value) ? value : 'liquid-cosmos';
 const validMode = value => MODES.includes(value) ? value : 'dark';
 const resolvedMode = mode => mode === 'system' ? (systemDark.matches ? 'dark' : 'light') : mode;
 

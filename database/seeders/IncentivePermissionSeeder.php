@@ -33,6 +33,8 @@ class IncentivePermissionSeeder extends Seeder
             Permission::findOrCreate($permission, 'web');
         }
 
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
+
         $rolePermissions = [
             'Owner' => self::PERMISSIONS,
             'Manager' => [

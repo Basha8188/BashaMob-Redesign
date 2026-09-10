@@ -532,7 +532,10 @@ class IncentiveEngine
             && $rule->calculation_method === 'percentage'
         ) {
             $paymentShare = BigDecimal::of($sale->total)->isGreaterThan(0)
-                ? BigDecimal::of($collected)->dividedBy($sale->total, 10, RoundingMode::HALF_UP)->min(BigDecimal::one())
+                ? BigDecimal::min(
+                    BigDecimal::of($collected)->dividedBy($sale->total, 10, RoundingMode::HALF_UP),
+                    BigDecimal::one()
+                )
                 : BigDecimal::zero();
             $basis = BigDecimal::of($basis)
                 ->multipliedBy($paymentShare)
@@ -650,16 +653,15 @@ class IncentiveEngine
         };
         $denominatorDecimal = BigDecimal::of($denominator);
         $ratio = $denominatorDecimal->isGreaterThan(0)
-            ? BigDecimal::of($returnedBasis)
-                ->dividedBy($denominatorDecimal, 10, RoundingMode::HALF_UP)
-                ->max(BigDecimal::zero())
-                ->min(BigDecimal::one())
-                ->__toString()
+            ? BigDecimal::min(
+                BigDecimal::max(
+                    BigDecimal::of($returnedBasis)
+                        ->dividedBy($denominatorDecimal, 10, RoundingMode::HALF_UP),
+                    BigDecimal::zero()
+                ),
+                BigDecimal::one()
+            )->__toString()
             : '0.0000000000';
-
-        if (app()->runningUnitTests() && env('INCENTIVE_DEBUG_RETURN')) {
-            dump(compact('originalMonetary', 'returnedMonetary', 'originalQuantity', 'returnedQuantity', 'returnedBasis', 'denominator', 'ratio'));
-        }
 
         return [
             $returnedBasis,

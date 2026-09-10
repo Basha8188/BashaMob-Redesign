@@ -1,0 +1,20 @@
+html[data-palette="liquid-cosmos"] {
+    --theme-50:#f5f7ff;
+    --theme-100:#e8edff;
+    --theme-200:#cfd8ff;
+    --theme-300:#a9b8ff;
+    --theme-400:#8394ff;
+    --theme-500:#6a63f6;
+    --theme-600:#6543df;
+    --theme-700:#5734bd;
+    --theme-800:#452d91;
+    --theme-900:#302263;
+    --theme-950:#100a2c;
+    --theme-dark:#100a2c;
+    --theme-light:#a9b8ff;
+    --theme-secondary:#874de8;
+    --theme-accent:#42d9f5;
+    --theme-gradient-start:#171047;
+    --theme-gradient-middle:#5e3ee6;
+    --theme-gradient-end:#42d9f5;
+}

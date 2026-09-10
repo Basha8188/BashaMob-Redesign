@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Setting;
 use App\Models\CustomerOrder;
 use App\Models\MaintenanceRequest;
 use App\Models\Product;
+use App\Models\Setting;
 use App\Services\AdminModuleDataService;
 use Illuminate\View\View;
 

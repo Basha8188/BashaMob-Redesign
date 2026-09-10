@@ -18,10 +18,14 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        if (app()->environment('production') && (! env('OWNER_EMAIL') || strlen((string) env('OWNER_PASSWORD')) < 12 || env('OWNER_PASSWORD') === 'BashaMob!2026Local')) {
+            throw new \RuntimeException('Set OWNER_EMAIL and a unique OWNER_PASSWORD of at least 12 characters before production seeding.');
+        }
+
         $this->call(RolePermissionSeeder::class);
         $this->call(IncentivePermissionSeeder::class);
 
-        $owner = User::updateOrCreate(['email' => env('OWNER_EMAIL', 'admin@bashamob.local')], [
+        $owner = User::firstOrCreate(['email' => env('OWNER_EMAIL', 'admin@bashamob.local')], [
             'name' => 'BashaMob Owner',
             'phone' => env('STAFF_PHONE', '201012345678'),
             'password' => Hash::make(env('OWNER_PASSWORD', 'BashaMob!2026Local')),

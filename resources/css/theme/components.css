@@ -156,7 +156,9 @@ html:is([data-palette="forest-moss"],[data-palette="cocoa-dust"],[data-palette="
     left:0!important;right:auto!important;top:48px!important;
     width:auto!important;
     min-width:0!important;
+    max-width:calc(100vw - 28px)!important;
     display:flex!important;
+    flex-wrap:wrap!important;
     gap:7px!important;
     padding:8px!important;
     background:var(--glass-bg-strong)!important;
@@ -186,12 +188,16 @@ html:is([data-palette="forest-moss"],[data-palette="cocoa-dust"],[data-palette="
 }
 .theme-palette button>span{display:none!important}
 .theme-palette button i{width:24px!important;height:24px!important;border-radius:50%!important;box-shadow:inset 0 1px rgba(255,255,255,.28),0 3px 9px rgba(0,0,0,.2);pointer-events:none!important}
+.theme-palette [data-palette="liquid-cosmos"] i{background:linear-gradient(135deg,#100a2c 34%,#6543df 58%,#42d9f5 100%)!important;box-shadow:0 0 14px rgba(66,217,245,.38)!important}
 .theme-palette [data-palette="default-violet"] i{background:linear-gradient(135deg,#36255c 48%,#d2c3f6 52%)!important}
+.theme-palette [data-palette="lavender"] i{background:linear-gradient(135deg,#44345b 48%,#e9e1f8 52%)!important}
+.theme-palette [data-palette="plum"] i{background:linear-gradient(135deg,#755c7d 48%,#c69b72 52%)!important}
 .theme-palette [data-palette="forest-moss"] i{background:linear-gradient(135deg,#27463b 48%,#7fae8b 52%)!important}
 .theme-palette [data-palette="cocoa-dust"] i{background:linear-gradient(135deg,#644b3e 48%,#cdb6a1 52%)!important}
 .theme-palette [data-palette="twilight-blue"] i{background:linear-gradient(135deg,#203b5c 48%,#84b6e4 52%)!important}
 .theme-palette [data-palette="moonstone"] i{background:linear-gradient(135deg,#6b737d 48%,#d9e0e7 52%)!important}
 .theme-palette button[aria-pressed="true"]{border-color:var(--theme-light,#d2c3f6)!important;background:color-mix(in srgb,var(--theme-light,#d2c3f6) 14%,transparent)!important;box-shadow:0 0 0 3px color-mix(in srgb,var(--theme-light,#d2c3f6) 12%,transparent)!important}
+.theme-picker-toggle:focus-visible,.theme-palette button:focus-visible{outline:2px solid var(--theme-primary,#8b5cf6)!important;outline-offset:3px!important}
 
 @media(max-width:1000px){
     .storefront-body .liquid-nav>.theme-picker{display:block!important}
