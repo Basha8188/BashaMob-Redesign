@@ -2,9 +2,7 @@
  * Final theme authority. Legacy bundles contain high-specificity violet/blue
  * declarations, so this layer is loaded last and drives the complete UI.
  */
-html[data-theme-name]{color-scheme:light dark;accent-color:var(--theme-primary);background:var(--theme-bg)}
-html[data-theme-name][data-theme="light"]{color-scheme:light}
-html[data-theme-name][data-theme="dark"]{color-scheme:dark}
+html[data-theme-name]{accent-color:var(--theme-primary);background:var(--theme-bg)}
 html[data-theme-name] body{color:var(--theme-text)!important;background-color:var(--theme-bg)!important}
 
 /* Admin semantic contract and depth. */

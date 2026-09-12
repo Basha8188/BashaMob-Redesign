@@ -1,29 +1,9 @@
 import './bootstrap';
 import './background';
 import './theme-manager';
+import { translateAuth, refreshAuthTranslations } from './auth-i18n';
 
 document.addEventListener('DOMContentLoaded', () => {
-    const lampIntro = document.querySelector('[data-lamp-intro]');
-    if (lampIntro) {
-        const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-        let lampIntroTimer;
-        const finishLampIntro = () => {
-            window.clearTimeout(lampIntroTimer);
-            lampIntro.classList.add('is-finished');
-            document.body.classList.remove('lamp-intro-active');
-            window.setTimeout(() => lampIntro.remove(), reducedMotion ? 0 : 650);
-        };
-
-        if (reducedMotion) {
-            finishLampIntro();
-        } else {
-            document.body.classList.add('lamp-intro-active');
-            window.requestAnimationFrame(() => lampIntro.classList.add('is-playing'));
-            lampIntroTimer = window.setTimeout(finishLampIntro, 4100);
-            lampIntro.querySelector('[data-lamp-intro-skip]')?.addEventListener('click', finishLampIntro);
-        }
-    }
-
     const assistant = document.querySelector('[data-ai-assistant]');
     if (assistant) {
         const panel = assistant.querySelector('.ai-assistant-panel');
@@ -212,22 +192,135 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (error) { document.dispatchEvent(new CustomEvent('admin:toast', { detail: { message: error.message } })); button.disabled = false; }
     });
     const html = document.documentElement;
-    const nav = document.querySelector('.liquid-nav');
-    const glow = document.querySelector('.nav-glow');
-    const links = [...document.querySelectorAll('.nav-link')];
+    // One shared glass orb per existing navigation, including vertical sidebars.
+    document.querySelectorAll('[data-liquid-nav]').forEach(liquidNav => {
+        const indicator = liquidNav.querySelector('[data-liquid-indicator]');
+        const items = [...liquidNav.querySelectorAll('[data-liquid-nav-item]')];
+        if (!indicator || !items.length) return;
+        const routeItem = items.find(item => item.getAttribute('aria-current') === 'page'
+            || item.classList.contains('is-active') || item.classList.contains('active'));
+        const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+        const vertical = liquidNav.dataset.liquidNav === 'vertical';
+        let selected = routeItem;
+        let motion;
+        let pop;
+        let navigationTimer;
+        let resizeFrame;
+        let ready = false;
 
-    const moveGlow = (link) => {
-        if (!link || !glow || !nav) return;
-        glow.style.opacity = '1';
-        glow.style.width = `${link.offsetWidth}px`;
-        glow.style.transform = `translateX(${link.offsetLeft - 7}px)`;
-    };
+        const measure = item => {
+            const navRect = liquidNav.getBoundingClientRect();
+            const icon = item.querySelector('svg') || item;
+            const iconRect = icon.getBoundingClientRect();
+            const itemRect = item.getBoundingClientRect();
+            return {
+                x: iconRect.left + iconRect.width / 2 - navRect.left + liquidNav.scrollLeft - liquidNav.clientLeft,
+                y: iconRect.top + iconRect.height / 2 - navRect.top + liquidNav.scrollTop - liquidNav.clientTop,
+                size: Math.min(itemRect.height - 4, itemRect.width - 4, Math.max(iconRect.width, iconRect.height) * 1.65),
+            };
+        };
+        const transform = (x, y, size, sx = 1, sy = 1) =>
+            'translate3d(' + (x - size / 2) + 'px,' + (y - size / 2) + 'px,0) scale(' + sx + ',' + sy + ')';
 
-    const active = document.querySelector('.nav-link.is-active');
-    requestAnimationFrame(() => moveGlow(active));
-    links.forEach(link => link.addEventListener('mouseenter', () => moveGlow(link)));
-    nav?.addEventListener('mouseleave', () => moveGlow(active));
-    window.addEventListener('resize', () => moveGlow(active));
+        const move = (item, animate = true) => {
+            if (!item || !item.getClientRects().length) { indicator.style.opacity = '0'; return 0; }
+            pop?.cancel();
+            const target = measure(item);
+            if (target.size <= 0) return 0;
+            // Sample the visual position before cancelling: rapid clicks never jump back.
+            const visible = indicator.getBoundingClientRect();
+            const navRect = liquidNav.getBoundingClientRect();
+            const from = ready ? {
+                x: visible.left + visible.width / 2 - navRect.left + liquidNav.scrollLeft - liquidNav.clientLeft,
+                y: visible.top + visible.height / 2 - navRect.top + liquidNav.scrollTop - liquidNav.clientTop,
+                sx: visible.width / target.size,
+                sy: visible.height / target.size,
+            } : { x: target.x, y: target.y, sx: 1, sy: 1 };
+            motion?.cancel();
+            pop?.cancel();
+            indicator.style.width = target.size + 'px';
+            indicator.style.height = target.size + 'px';
+            indicator.style.transform = transform(target.x, target.y, target.size);
+            indicator.style.opacity = '1';
+            liquidNav.classList.add('liquid-nav-ready');
+            selected = item;
+            ready = true;
+            const dx = target.x - from.x;
+            const dy = target.y - from.y;
+            const distance = Math.hypot(dx, dy);
+            items.forEach(link => {
+                link.classList.toggle('liquid-nav-target', link === item);
+                link.classList.toggle('liquid-nav-leaving', link === routeItem && link !== item);
+            });
+            if (!animate || reducedMotion.matches || !indicator.animate || distance < 1) {
+                indicator.classList.remove('is-moving');
+                return 0;
+            }
+            const duration = Math.min(600, 450 + distance * .25);
+            const stretch = Math.min(1.9, 1.2 + distance / (target.size * 4));
+            const direction = (vertical ? dy : dx) >= 0 ? 1 : -1;
+            indicator.style.setProperty('--liquid-tail-angle', (vertical ? direction * 90 : direction > 0 ? 0 : 180) + 'deg');
+            indicator.classList.add('is-moving');
+            const frame = (progress, elongation, squash, offset) => ({
+                transform: transform(
+                    from.x + dx * progress, from.y + dy * progress, target.size,
+                    vertical ? squash : elongation, vertical ? elongation : squash
+                ), offset
+            });
+            motion = indicator.animate([
+                { transform: transform(from.x, from.y, target.size, from.sx, from.sy), offset: 0 },
+                frame(.25, stretch, .86, .24),
+                frame(.67, stretch * .92, .92, .52),
+                frame(.94, 1.15, .97, .80),
+                frame(1, 1, 1, 1),
+            ], { duration, easing: 'cubic-bezier(0.22,1,0.36,1)' });
+            const thisMotion = motion;
+            motion.finished.then(() => {
+                if (motion !== thisMotion) return;
+                indicator.classList.remove('is-moving');
+                motion = null;
+            }).catch(() => {});
+            const icon = item.querySelector('svg');
+            if (icon?.animate) pop = icon.animate([
+                { transform: 'translateY(0) scale(1)' },
+                { transform: 'translateY(-2px) scale(1.10)', offset: .4 },
+                { transform: 'translateY(0) scale(1.03)', offset: .72 },
+                { transform: 'translateY(0) scale(1)' },
+            ], { duration: 180, delay: duration * .68, easing: 'cubic-bezier(0.22,1,0.36,1)' });
+            return duration;
+        };
+        move(routeItem, false);
+        const realign = () => {
+            cancelAnimationFrame(resizeFrame);
+            resizeFrame = requestAnimationFrame(() => move(selected, false));
+        };
+        window.addEventListener('resize', realign, { passive: true });
+        if (window.ResizeObserver) {
+            const observer = new ResizeObserver(realign);
+            observer.observe(liquidNav);
+            items.forEach(item => observer.observe(item));
+        }
+        document.fonts?.ready.then(realign);
+        reducedMotion.addEventListener?.('change', realign);
+        window.addEventListener('pageshow', () => {
+            clearTimeout(navigationTimer);
+            move(routeItem, false);
+        });
+        liquidNav.addEventListener('click', event => {
+            const item = event.target.closest('[data-liquid-nav-item]');
+            if (!item || !liquidNav.contains(item) || event.defaultPrevented
+                || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey
+                || item.hasAttribute('download') || (item.target && item.target !== '_self')) return;
+            const destination = new URL(item.href, window.location.href);
+            if (destination.origin !== window.location.origin || !/^https?:$/.test(destination.protocol)) return;
+            clearTimeout(navigationTimer);
+            const duration = move(item);
+            // Preserve native navigation for reduced-motion and older browsers.
+            if (!duration) return;
+            event.preventDefault();
+            navigationTimer = window.setTimeout(() => window.location.assign(destination.href), duration + 70);
+        });
+    });
 
     document.querySelectorAll('.password-toggle').forEach(button => {
         button.addEventListener('click', () => {
@@ -236,7 +329,7 @@ document.addEventListener('DOMContentLoaded', () => {
             input.type = input.type === 'password' ? 'text' : 'password';
             if (button.classList.contains('reference-eye')) {
                 button.classList.toggle('is-visible', input.type === 'text');
-                button.setAttribute('aria-label', input.type === 'password' ? 'Show password' : 'Hide password');
+                button.setAttribute('aria-label', translateAuth(input.type === 'password' ? 'إظهار كلمة المرور' : 'إخفاء كلمة المرور'));
             } else {
                 button.textContent = input.type === 'password' ? '◉' : '⊘';
             }
@@ -664,7 +757,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const setRecoveryStatus = (message, error = false) => {
         if (!recoveryStatus) return;
-        recoveryStatus.textContent = message;
+        recoveryStatus.dataset.originalMessage = message;
+        recoveryStatus.textContent = translateAuth(message);
         recoveryStatus.classList.toggle('is-error', error);
     };
     const openRecovery = method => {
@@ -683,6 +777,7 @@ document.addEventListener('DOMContentLoaded', () => {
         recoveryRequestForm.elements.method.value = method;
         destination.value = method === 'email' ? (document.querySelector('.reference-login-form [name="email"]')?.value || '') : '';
         setRecoveryStatus('');
+        refreshAuthTranslations();
         recoveryModal.classList.add('is-open');
         recoveryModal.setAttribute('aria-hidden', 'false');
         window.setTimeout(() => destination.focus(), 100);

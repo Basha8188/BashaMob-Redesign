@@ -1,0 +1,7 @@
+﻿BashaMob Demo - local trial account
+Username / Email: demo@bashamob.local
+Password: Demo!2026Local
+
+Run demo.cmd to open the application.
+Closing the application deletes trial data.
+These credentials are for the demo only, not customer production installations.

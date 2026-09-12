@@ -1,10 +1,9 @@
-@php
-    $savedTheme = auth()->user()?->theme_name ?? 'liquid-cosmos';
-    $savedMode = auth()->user()?->theme_mode ?? 'dark';
-@endphp
+{{-- Fixed visual identity; saved account/device theme preferences are intentionally ignored. --}}
 <script>
-(()=>{const themes=['liquid-cosmos','default-violet','lavender','plum','forest-moss','cocoa-dust','twilight-blue','moonstone'],modes=['light','dark','system'],r=document.documentElement,legacy=localStorage.getItem('basha-palette'),serverTheme=@json($savedTheme),serverMode=@json($savedMode),theme=themes.includes(legacy)?legacy:(legacy==='violet'?'default-violet':(themes.includes(serverTheme)?serverTheme:'liquid-cosmos')),storedMode=localStorage.getItem('basha-theme-mode')||localStorage.getItem('basha-theme'),mode=modes.includes(storedMode)?storedMode:(modes.includes(serverMode)?serverMode:'dark');r.dataset.themeName=theme;r.dataset.palette=theme==='default-violet'?'violet':theme;r.dataset.mode=mode;r.dataset.theme=mode==='system'?(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light'):mode})();
+(() => {
+    const root = document.documentElement;
+    root.dataset.themeName = 'premium-glass';
+    root.dataset.theme = 'unified';
+})();
 </script>
-@auth
-<meta name="theme-preference-url" content="{{ route('theme-preference.store') }}">
-@endauth
+<style>:root { --theme-background-image: url(@json(asset('images/theme/main-bg.png'), JSON_UNESCAPED_SLASHES)); }</style>

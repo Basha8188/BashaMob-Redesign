@@ -72,48 +72,34 @@ class ThemePreferenceTest extends TestCase
         $this->assertSame('moonstone', $user->fresh()->theme_name);
     }
 
-    public function test_login_page_contains_the_liquid_theme_and_all_preserved_theme_options(): void
+    public function test_public_pages_use_one_fixed_theme_without_selection_controls(): void
     {
-        $response = $this->get(route('staff.login'))->assertOk();
-
-        foreach (['liquid-cosmos', 'default-violet', 'lavender', 'plum', 'forest-moss', 'cocoa-dust', 'twilight-blue', 'moonstone'] as $theme) {
-            $response->assertSee('data-palette="'.$theme.'"', false);
+        foreach ([route('home'), route('shop'), route('maintenance'), route('computers'), route('staff.login')] as $url) {
+            $this->get($url)->assertOk()
+                ->assertSee("root.dataset.themeName = 'premium-glass'", false)
+                ->assertSee('images/theme/main-bg.png', false)
+                ->assertDontSee('class="theme-picker', false)
+                ->assertDontSee('class="theme-toggle', false)
+                ->assertDontSee('theme-preference-url', false);
         }
     }
 
-    public function test_palette_picker_is_available_on_storefront_login_and_staff_screens(): void
+    public function test_saved_staff_preferences_do_not_change_the_fixed_identity(): void
     {
-        $themes = ['liquid-cosmos', 'default-violet', 'lavender', 'plum', 'forest-moss', 'cocoa-dust', 'twilight-blue', 'moonstone'];
-
-        foreach ([route('home'), route('staff.login')] as $url) {
-            $response = $this->get($url)->assertOk();
-            $response->assertSee('class="theme-picker', false);
-            foreach ($themes as $theme) {
-                $response->assertSee('data-palette="'.$theme.'"', false);
-            }
-        }
-
         $this->seed(RolePermissionSeeder::class);
-        $staff = User::factory()->create();
+        $staff = User::factory()->create([
+            'theme_name' => 'forest-moss',
+            'theme_mode' => 'light',
+            'use_system_mode' => true,
+        ]);
         $staff->assignRole('Owner');
-        $response = $this->actingAs($staff)->get(route('admin.dashboard'))->assertOk();
-        $response->assertSee('admin-palette-picker', false);
-        foreach ($themes as $theme) {
-            $response->assertSee('data-palette="'.$theme.'"', false);
-        }
-    }
-
-    public function test_palette_picker_has_a_clickable_layer_and_delegated_interaction_contract(): void
-    {
-        $manager = file_get_contents(resource_path('js/theme-manager.js'));
-        $styles = file_get_contents(resource_path('css/theme/components.css'));
-
-        $this->assertStringContainsString('.theme-palette button[data-palette]', $manager);
-        $this->assertStringContainsString("document.addEventListener('click'", $manager);
-        $this->assertStringContainsString("root.classList.toggle('theme-picker-open'", $manager);
-        $this->assertStringContainsString('.theme-picker.is-open .theme-palette', $styles);
-        $this->assertStringContainsString('pointer-events:auto!important', $styles);
-        $this->assertStringContainsString('.admin-body .topbar-actions>.theme-picker', $styles);
+        $this->actingAs($staff)->get(route('admin.dashboard'))->assertOk()
+            ->assertSee("root.dataset.themeName = 'premium-glass'", false)
+            ->assertSee("root.dataset.theme = 'unified'", false)
+            ->assertDontSee('class="theme-picker', false)
+            ->assertDontSee('topbar-theme theme-toggle', false)
+            ->assertDontSee('theme-preference-url', false);
+        $this->assertSame('forest-moss', $staff->fresh()->theme_name);
     }
 
     public function test_unified_theme_layer_is_loaded_last_and_covers_the_complete_interface(): void
@@ -123,8 +109,8 @@ class ThemePreferenceTest extends TestCase
 
         $this->assertStringContainsString("@import './system-unified.css';", $index);
         $this->assertGreaterThan(
-            strpos($index, "@import './components.css';"),
-            strpos($index, "@import './system-unified.css';")
+            strpos($index, "@import './system-unified.css';"),
+            strpos($index, "@import './premium-glass.css';")
         );
 
         foreach ([
