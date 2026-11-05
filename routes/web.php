@@ -92,6 +92,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'staff'])->group(fun
     Route::patch('/team/{user}', [StaffController::class, 'update']);
     Route::delete('/team/{user}', [StaffController::class, 'destroy']);
     Route::post('/sales', [SaleController::class, 'store']);
+    Route::get('/sales/available-devices', [SaleController::class, 'availableDevices']);
     Route::delete('/sales/{sale}', [SaleController::class, 'destroy']);
     Route::post('/sales/{sale}/pay', [SaleController::class, 'pay']);
     Route::post('/sales/{sale}/refund', [SaleController::class, 'refund']);

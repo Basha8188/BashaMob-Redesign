@@ -17,6 +17,6 @@ class ReportController extends Controller
         $from = $r->date('from') ?? now()->startOfMonth();
         $to = $r->date('to') ?? now()->endOfMonth();
 
-        return response()->json(['period' => ['from' => $from->toDateString(), 'to' => $to->toDateString()], 'sales' => Sale::whereBetween('created_at', [$from, $to])->where('status', 'finalized')->sum('total'), 'purchases' => Purchase::whereBetween('created_at', [$from, $to])->sum('total'), 'stock_value' => $inventoryValue->total()]);
+        return response()->json(['period' => ['from' => $from->toDateString(), 'to' => $to->toDateString()], 'sales' => Sale::whereBetween('created_at', [$from, $to])->where('status', 'finalized')->sum('total'), 'purchases' => Purchase::whereBetween('created_at', [$from, $to])->sum('total'), 'stock_value' => $inventoryValue->total(), 'stock_valuation' => $inventoryValue->summary()]);
     }
 }

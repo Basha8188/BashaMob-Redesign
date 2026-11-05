@@ -22,4 +22,9 @@ class SaleReturnItem extends Model
     {
         return $this->belongsTo(SaleItem::class);
     }
+
+    public function serial()
+    {
+        return $this->belongsTo(ProductSerial::class, 'product_serial_id');
+    }
 }

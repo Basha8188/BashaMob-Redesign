@@ -12,7 +12,7 @@
         <x-admin.stat-card tone="pink" icon="purchases" title="إجمالي المشتريات" subtitle="منذ بداية الشهر" :value="number_format($metrics['purchases'],2)" unit="ج.م" />
         <x-admin.stat-card tone="purple" icon="sales" title="فواتير اليوم" subtitle="إجمالي الفواتير" :value="number_format($metrics['invoices_today'])" />
         <x-admin.stat-card tone="gold" icon="sales" title="صافي مبيعات اليوم" subtitle="بعد الخصومات" :value="number_format($metrics['sales_today'],2)" unit="ج.م" />
-        <x-admin.stat-card tone="orange" icon="inventory" title="قيمة المخزون" subtitle="التكلفة الحالية" :value="number_format($metrics['stock_value'],2)" unit="ج.م" />
+        <x-admin.stat-card tone="orange" icon="inventory" title="قيمة المخزون" :subtitle="$metrics['stock_value'] === null ? 'التكلفة غير مؤكدة' : 'التكلفة الحالية'" :value="$metrics['stock_value'] === null ? 'غير معروفة' : number_format((float) $metrics['stock_value'],2)" unit="ج.م" />
         <x-admin.stat-card tone="violet" icon="reports" title="متوسط قيمة الفاتورة" subtitle="متوسط اليوم" :value="number_format($metrics['average_invoice'],2)" unit="ج.م" />
         <x-admin.stat-card tone="blue" icon="expenses" title="المبالغ المستحقة" subtitle="غير محصلة" :value="number_format($metrics['due'],2)" unit="ج.م" />
         <x-admin.stat-card tone="amber" icon="purchases" title="المرتجعات المسجلة" subtitle="خلال اليوم" :value="number_format($metrics['returns_today'])" />

@@ -30,8 +30,9 @@ class ProductRequest extends FormRequest
             'name' => ['required', 'string', 'max:190'],
             'brand' => ['nullable', 'string', 'max:100'],
             'purchase_cost' => ['required', 'numeric', 'min:0'],
+            'tracking_type' => ['nullable', 'in:quantity,serial,imei'],
             'price' => ['required', 'numeric', 'min:0'],
-            'quantity' => [$this->isMethod('post') ? 'required' : 'sometimes', 'integer', 'min:0'],
+            'quantity' => [$this->isMethod('post') ? 'required' : 'sometimes', 'numeric', 'min:0', 'decimal:0,3'],
             'image' => ['nullable', File::image()->types(['jpg', 'jpeg', 'png', 'webp'])->max(4 * 1024)],
         ];
     }

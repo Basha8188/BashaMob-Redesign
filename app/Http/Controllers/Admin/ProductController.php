@@ -13,10 +13,12 @@ use App\Models\WarehouseStock;
 use App\Services\ActivityLogger;
 use App\Services\Ean13BarcodeService;
 use App\Services\InventoryService;
+use Brick\Math\BigDecimal;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 class ProductController extends Controller
 {
@@ -31,10 +33,14 @@ class ProductController extends Controller
                 $d = $request->validated();
                 $brandName = $d['brand'] ?? null;
                 $brand = $brandName ? Brand::firstOrCreate(['name' => $brandName], ['slug' => Str::slug($brandName).'-'.Str::lower(Str::random(4))]) : null;
-                $p = Product::create(['sku' => $d['sku'], 'barcode' => ($d['barcode'] ?? null) ?: $this->generateBarcode(), 'name' => $d['name'], 'brand_id' => $brand?->id, 'image_path' => $imagePath, 'tracking_type' => ProductTrackingType::Quantity, 'purchase_price' => $d['purchase_cost'], 'sale_price' => $d['price'], 'created_by' => $request->user()->id]);
+                $tracking = ProductTrackingType::from($d['tracking_type'] ?? 'quantity');
+                if ($tracking !== ProductTrackingType::Quantity && BigDecimal::of((string) $d['quantity'])->isPositive()) {
+                    throw ValidationException::withMessages(['quantity' => 'Receive serialized devices through a purchase with their identifiers.']);
+                }
+                $p = Product::create(['sku' => $d['sku'], 'barcode' => ($d['barcode'] ?? null) ?: $this->generateBarcode(), 'name' => $d['name'], 'brand_id' => $brand?->id, 'image_path' => $imagePath, 'tracking_type' => $tracking, 'purchase_price' => $d['purchase_cost'], 'sale_price' => $d['price'], 'created_by' => $request->user()->id]);
                 $w = Warehouse::where('is_default', true)->firstOrFail();
                 if ((float) $d['quantity'] > 0) {
-                    $this->inventory->adjust($w, $p, (float) $d['quantity'], StockMovementType::OpeningBalance, $p, unitCost: (float) $d['purchase_cost']);
+                    $this->inventory->adjust($w, $p, (string) $d['quantity'], StockMovementType::OpeningBalance, $p, unitCost: (string) $d['purchase_cost']);
                 }
                 ActivityLogger::record('product.created', $p, newValues: $p->toArray());
 
@@ -61,13 +67,18 @@ class ProductController extends Controller
                 $brandName = $d['brand'] ?? null;
                 $brand = $brandName ? Brand::firstOrCreate(['name' => $brandName], ['slug' => Str::slug($brandName).'-'.Str::lower(Str::random(4))]) : null;
                 $product->update(['sku' => $d['sku'], 'barcode' => ($d['barcode'] ?? null) ?: ($product->barcode ?: $this->generateBarcode()), 'name' => $d['name'], 'brand_id' => $brand?->id, 'image_path' => $newImagePath ?: $product->image_path, 'purchase_price' => $d['purchase_cost'], 'sale_price' => $d['price'], 'updated_by' => $request->user()->id]);
-                WarehouseStock::where('product_id', $product->id)->where('average_cost', '<=', 0)->update(['average_cost' => $d['purchase_cost']]);
+                if (! empty($d['tracking_type']) && $d['tracking_type'] !== $product->tracking_type->value) {
+                    throw ValidationException::withMessages(['tracking_type' => 'Product tracking type cannot be changed after creation.']);
+                }
                 if (array_key_exists('quantity', $d)) {
                     $w = Warehouse::where('is_default', true)->firstOrFail();
-                    $current = (float) WarehouseStock::where('warehouse_id', $w->id)->where('product_id', $product->id)->sum('quantity');
-                    $diff = (float) $d['quantity'] - $current;
-                    if ($diff) {
-                        $this->inventory->adjust($w, $product, $diff, $diff > 0 ? StockMovementType::AdjustmentIn : StockMovementType::AdjustmentOut, $product);
+                    $current = WarehouseStock::where('warehouse_id', $w->id)->where('product_id', $product->id)->where('variant_key', 0)->lockForUpdate()->value('quantity') ?? '0';
+                    $diff = BigDecimal::of((string) $d['quantity'])->minus($current);
+                    if ($product->tracking_type !== ProductTrackingType::Quantity && ! $diff->isZero()) {
+                        throw ValidationException::withMessages(['quantity' => 'Serialized stock changes through device purchases and sales only.']);
+                    }
+                    if (! $diff->isZero()) {
+                        $this->inventory->adjust($w, $product, (string) $diff, $diff->isPositive() ? StockMovementType::AdjustmentIn : StockMovementType::AdjustmentOut, $product, unitCost: $diff->isPositive() ? (string) $d['purchase_cost'] : null, notes: $diff->isPositive() ? 'Product edit: stated purchase cost' : 'Product edit: carrying cost');
                     }
                 }
                 ActivityLogger::record('product.updated', $product, $old, $product->fresh()->toArray());

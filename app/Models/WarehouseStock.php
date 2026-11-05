@@ -10,7 +10,7 @@ class WarehouseStock extends Model
 
     protected function casts(): array
     {
-        return ['quantity' => 'decimal:3', 'reserved_quantity' => 'decimal:3', 'average_cost' => 'decimal:2'];
+        return ['quantity' => 'decimal:3', 'reserved_quantity' => 'decimal:3', 'average_cost' => 'decimal:10', 'inventory_value' => 'decimal:6'];
     }
 
     public function warehouse()

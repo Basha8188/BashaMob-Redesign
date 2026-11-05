@@ -78,6 +78,7 @@ class AiAssistantTest extends TestCase
             'quantity' => 5,
             'reserved_quantity' => 0,
             'average_cost' => 8000,
+            'inventory_value' => 40000,
         ]);
         config([
             'services.openai.key' => 'test-key',
@@ -182,6 +183,7 @@ class AiAssistantTest extends TestCase
             'quantity' => 3,
             'reserved_quantity' => 0,
             'average_cost' => 8000,
+            'inventory_value' => 24000,
         ]);
         config(['services.openai.key' => null]);
 

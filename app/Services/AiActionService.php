@@ -301,6 +301,7 @@ class AiActionService
                 $sale->items()->create([
                     'product_id' => $product->id,
                     'product_serial_id' => $payload['product_serial_id'],
+                    'product_variant_id' => $payload['product_serial_id'] ? ProductSerial::findOrFail($payload['product_serial_id'])->product_variant_id : null,
                     'quantity' => $payload['quantity'],
                     'unit_price' => $payload['unit_price'],
                     'total' => $total,

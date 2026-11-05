@@ -10,6 +10,6 @@ class PurchaseReturnItem extends Model
 
     protected function casts(): array
     {
-        return ['quantity' => 'decimal:3', 'unit_cost' => 'decimal:2', 'total' => 'decimal:2'];
+        return ['quantity' => 'decimal:3', 'unit_cost' => 'decimal:2', 'total' => 'decimal:2', 'inventory_value_removed' => 'decimal:6', 'cost_variance' => 'decimal:6'];
     }
 }

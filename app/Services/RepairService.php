@@ -7,6 +7,8 @@ use App\Enums\StockMovementType;
 use App\Models\Product;
 use App\Models\RepairTicket;
 use App\Models\Warehouse;
+use Brick\Math\BigDecimal;
+use Brick\Math\RoundingMode;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -38,8 +40,9 @@ class RepairService
     public function usePart(RepairTicket $ticket, Warehouse $warehouse, Product $product, float $quantity, float $salePrice): void
     {
         DB::transaction(function () use ($ticket, $warehouse, $product, $quantity, $salePrice) {
-            $part = $ticket->parts()->create(['warehouse_id' => $warehouse->id, 'product_id' => $product->id, 'quantity' => $quantity, 'unit_cost' => $product->purchase_price, 'sale_price' => $salePrice, 'added_by' => auth()->id()]);
-            $this->inventory->adjust($warehouse, $product, -$quantity, StockMovementType::RepairPartUsage, $part, null, null, (float) $product->purchase_price);
+            $part = $ticket->parts()->create(['warehouse_id' => $warehouse->id, 'product_id' => $product->id, 'quantity' => $quantity, 'unit_cost' => 0, 'sale_price' => $salePrice, 'added_by' => auth()->id()]);
+            $movement = $this->inventory->adjust($warehouse, $product, (string) BigDecimal::of((string) $quantity)->negated(), StockMovementType::RepairPartUsage, $part, eventKey: 'repair-part:'.$part->id);
+            $part->update(['unit_cost' => (string) BigDecimal::of($movement->unit_cost)->toScale(2, RoundingMode::HALF_UP)]);
             ActivityLogger::record('repair.part_used', $ticket, newValues: ['product_id' => $product->id, 'quantity' => $quantity]);
         });
     }

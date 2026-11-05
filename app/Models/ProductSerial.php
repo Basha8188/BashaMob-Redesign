@@ -38,4 +38,9 @@ class ProductSerial extends Model
     {
         return $this->hasOne(CustomerDevice::class);
     }
+
+    public function identifiers()
+    {
+        return $this->hasMany(ProductSerialIdentifier::class);
+    }
 }

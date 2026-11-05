@@ -12,6 +12,7 @@ class RolePermissionSeeder extends Seeder
     public const PERMISSIONS = [
         'view-dashboard',
         'view-products', 'create-products', 'edit-products', 'delete-products',
+        'view-device-cost',
         'view-sales', 'create-sales', 'cancel-sales', 'refund-sales',
         'view-purchases', 'create-purchases', 'receive-purchases',
         'view-inventory', 'adjust-inventory',
@@ -38,8 +39,8 @@ class RolePermissionSeeder extends Seeder
             'Manager' => array_values(array_diff(self::PERMISSIONS, ['manage-settings', 'manage-staff'])),
             'Cashier' => ['view-dashboard', 'view-sales', 'create-sales', 'refund-sales', 'view-customers', 'manage-customers', 'device_passports.view', 'device_passports.create'],
             'Technician' => ['view-dashboard', 'view-repairs', 'create-repairs', 'update-repair-status', 'complete-repairs', 'view-inventory', 'device_passports.view', 'repair_inspections.view', 'repair_inspections.create', 'repair_inspections.update', 'repair_quotations.create'],
-            'Inventory Clerk' => ['view-dashboard', 'view-products', 'create-products', 'edit-products', 'view-inventory', 'adjust-inventory', 'view-purchases', 'create-purchases', 'receive-purchases', 'view-suppliers', 'manage-suppliers', 'device_passports.view'],
-            'Accountant' => ['view-dashboard', 'view-sales', 'view-purchases', 'view-expenses', 'manage-expenses', 'view-reports'],
+            'Inventory Clerk' => ['view-dashboard', 'view-products', 'create-products', 'edit-products', 'view-device-cost', 'view-inventory', 'adjust-inventory', 'view-purchases', 'create-purchases', 'receive-purchases', 'view-suppliers', 'manage-suppliers', 'device_passports.view'],
+            'Accountant' => ['view-dashboard', 'view-sales', 'view-purchases', 'view-device-cost', 'view-expenses', 'manage-expenses', 'view-reports'],
         ];
 
         foreach ($roles as $name => $permissions) {
